@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info" name="psp-api" packages=""
+	monitorInterval="30">
+	<Properties>
+		<Property name="LOG_PATTERN">%d %p %c [%t] %-5level %m%n</Property>
+	</Properties>
+	<Appenders>
+		<Console name="CONSOLE" target="SYSTEM_OUT">
+			<!-- <PatternLayout -->
+			<!-- pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" /> -->
+			<PatternLayout pattern="${LOG_PATTERN}" />
+		</Console>
+
+		<RollingFile name="RollingFile"
+			fileName="${sys:log}"
+			filePattern="${sys:log}.%d{yyyy-MM-dd}.gz">
+			<PatternLayout>
+				<Pattern>%d %p %c{1.} [%t] %-5level %m%n</Pattern>
+			</PatternLayout>
+			 <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<AsyncLogger name="asia.leadsgen" level="info">
+			<AppenderRef ref="RollingFile" />
+		</AsyncLogger>
+		<AsyncRoot level="info">
+			<AppenderRef ref="CONSOLE" />
+<!-- 			<AppenderRef ref="RollingFile" /> -->
+		</AsyncRoot>
+
+<!-- 		<logger name="asia.leadsgen" level="info"> -->
+<!-- 			<appender-ref ref="RollingFile" /> -->
+<!-- 		</logger> -->
+<!-- 		<Root level="info"> -->
+<!-- 			<AppenderRef ref="CONSOLE" /> -->
+<!-- 		</Root> -->
+	</Loggers>
+</Configuration>
