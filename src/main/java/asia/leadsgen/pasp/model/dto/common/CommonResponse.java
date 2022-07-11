@@ -1,4 +1,4 @@
-package asia.leadsgen.pasp.model.dto.Common;
+package asia.leadsgen.pasp.model.dto.common;
 
 
 import asia.leadsgen.pasp.util.AppParams;

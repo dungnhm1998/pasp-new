@@ -1,5 +1,6 @@
 package asia.leadsgen.pasp.entity;
 
+import asia.leadsgen.pasp.util.DBParams;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,24 +13,24 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "TB_BASE_GROUP")
+@Entity(name = DBParams.TB_BASE_GROUP)
 public class BaseGroup {
 	@Id
-	@Column(name = "S_ID")
+	@Column(name = DBParams.S_ID)
 	private String id;
-	@Column(name = "S_PARENT_ID")
+	@Column(name = DBParams.S_PARENT_ID)
 	private String parentId;
-	@Column(name = "S_NAME")
+	@Column(name = DBParams.S_NAME)
 	private String name;
-	@Column(name = "S_DESC")
+	@Column(name = DBParams.S_DESC)
 	private String desc;
-	@Column(name = "N_POSITION")
+	@Column(name = DBParams.N_POSITION)
 	private Integer position;
-	@Column(name = "S_STATE")
+	@Column(name = DBParams.S_STATE)
 	private String state;
-	@Column(name = "D_CREATE")
+	@Column(name = DBParams.D_CREATE)
 	private Date createDate;
-	@Column(name = "D_UPDATE")
+	@Column(name = DBParams.D_UPDATE)
 	private Date updateDate;
 
 	public BaseGroup(String id, String name) {

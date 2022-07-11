@@ -1,5 +1,7 @@
 package asia.leadsgen.pasp.util;
 
+import okhttp3.MediaType;
+
 import java.util.TimeZone;
 
 public class AppConstants {
@@ -39,21 +41,14 @@ public class AppConstants {
 
 	public static final String LOCAL_TIME_ZONE = TimeZone.getDefault().getID();
 
-	public static final String BURGER_PRINTS = "BurgerPrints";
-	public static final String CHAMPY = "CHAMPY";
-	public static final String TSC = "TSC";
-	public static final String CUSTOM_CAT = "CUSTOM_CAT";
-	public static final String JOY = "JOY";
-	public static final String SCALABLE_PRESS = "SCALABLE_PRESS";
-	public static final String GEARMENT = "GEARMENT";
-	public static final String PRINTWAY = "PRINTWAY";
-	public static final String CANVAS_CHAMBO = "CANVAS_CHAMBO";
-	public static final String CANVAS_CHAMP = "CANVAS_CHAMP";
-	public static final String LEE_COW_LEATHER = "LEE_COW_LEATHER";
-	public static final String ROSALINDA = "ROSALINDA";
-	public static final String XUFA = "XUFA";
-	public static final String TIANLONG = "TIANLONG";
-	public static final String DISTRICPHOTO = "DISTRICPHOTO";
-	public static final String SOTECHOM = "SOTECHOM";
-	public static final String SWIFT_POD = "SWIFT_POD";
+	public static final MediaType MEDIA_TYPE_JSON = MediaType.get("application/json; charset=utf-8");
+	public static final String CONTENT_TYPE = "Content-Type";
+	public static final String AUTHORIZATION = "Authorization";
+	public static final String CONTENT_TYPE_APPLICATION_FORM_URLENCODED = "application/x-www-form-urlencoded";
+	public static final String CONTENT_TYPE_APPLICATION_JSON = "application/json";
+	public static final String PAYPAL_PARTNER_ATTRIBUTION_ID = "PayPal-Partner-Attribution-Id";
+	public static final String ACCEPT_LANGUAGE = "Accept-Language";
+	public static final String EN_US = "en_US";
+	public static final String ACCEPT = "Accept";
+
 }

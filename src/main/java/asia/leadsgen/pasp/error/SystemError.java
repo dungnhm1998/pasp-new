@@ -20,10 +20,12 @@ public class SystemError {
 	private String details;
 	private String informationLink;
 
+	public static final SystemError RESPONSE_OK = new SystemError(HttpResponseStatus.OK.code(), HttpResponseStatus.OK.reasonPhrase(), "");
 	public static final SystemError INVALID_HEADER_X_DATE = new SystemError(400001, "Request header X_DATE not found", "");
 	public static final SystemError INVALID_TOKEN = new SystemError(401001, "Invalid token", "");
 	public static final SystemError UNAUTHORIZED = new SystemError(HttpResponseStatus.UNAUTHORIZED.code(), HttpResponseStatus.UNAUTHORIZED.reasonPhrase(), "");
 	public static final SystemError OPERATION_NOT_PERMITTED = new SystemError(401002, "Operation not permitted", "");
+	public static final SystemError PAYMENT_ERROR = new SystemError(400002, "Payment error", "");
 
 	public SystemError(int code, String message, String details) {
 		this.code = code;

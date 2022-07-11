@@ -35,7 +35,7 @@ public class PaymentController {
 	@Autowired
 	private PaymentService paymentService;
 
-	@RequestMapping(method = RequestMethod.POST, path = "/charge")
+	@RequestMapping(method = RequestMethod.POST, path = "")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Request success", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
 					@ExampleObject(name = "charge succees", summary = "charge success", value = PaymentExample.SUCCESS)})),
