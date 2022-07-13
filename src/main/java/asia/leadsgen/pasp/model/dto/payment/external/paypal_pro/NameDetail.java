@@ -2,20 +2,26 @@ package asia.leadsgen.pasp.model.dto.payment.external.paypal_pro;
 
 import asia.leadsgen.pasp.util.AppParams;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class NameDetail {
 	@JsonProperty(value = AppParams.NAME)
-	Money name;
+	String name;
 	@JsonProperty(value = AppParams.FULL_NAME)
-	Money fullName;
+	String fullName;
 	@JsonProperty(value = AppParams.SURNAME)
-	Money surName;
+	String surName;
 	@JsonProperty(value = AppParams.PREFIX)
-	Money prefix;
+	String prefix;
 	@JsonProperty(value = AppParams.SUFFIX)
-	Money suffix;
+	String suffix;
 	@JsonProperty(value = AppParams.MIDDLE_NAME)
-	Money middleName;
+	String middleName;
 	@JsonProperty(value = AppParams.GIVEN_NAME)
-	Money givenName;
+	String givenName;
 }

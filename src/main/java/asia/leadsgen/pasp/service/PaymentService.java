@@ -15,11 +15,17 @@ import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentU
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.Reason;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderRequest;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderResponse;
 import asia.leadsgen.pasp.util.AppConstants;
 import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.AppUtil;
+import asia.leadsgen.pasp.util.GetterUtil;
 import asia.leadsgen.pasp.util.ResourceStates;
+import com.sun.xml.bind.v2.TODO;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,6 +35,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -65,8 +74,16 @@ public class PaymentService {
 			return processPaypal(paymentRequest);
 		} else if (AppParams.PAYPAL_PRO.matches(method)) {
 			return processPaypalPro(paymentRequest);
-		}else{
-
+		}else if (AppParams.STRIPE.matches(method)) {
+			return processPaypalPro(paymentRequest);
+		}else if (AppParams.BRAINTREE.matches(method)) {
+//			TODO;
+		}else if (AppParams.ANET.matches(method)) {
+//			TODO;
+		} else if (AppParams.BANK_OF_USA.matches(method)) {
+//			TODO;
+		} else {
+//			TODO;
 		}
 
 		return paymentResponse;
@@ -91,8 +108,7 @@ public class PaymentService {
 			}
 
 			String state = "";
-			if (ResourceStates.CREATED.equals(paymentUrlResponse.getState())
-					&& paymentUrlResponse.getLinks().size() > 0) {
+			if (ResourceStates.CREATED.equals(paymentUrlResponse.getState()) && paymentUrlResponse.getLinks().size() > 0) {
 				state = ResourceStates.CREATED;
 				Link link = paymentUrlResponse.getLinks().get(0);
 				link.setRel("approval_url");
@@ -143,6 +159,58 @@ public class PaymentService {
 		return ResponseData.ok(paymentResponse);
 	}
 
+//	private ResponseData<PaymentResponse> processStripe(PaymentRequest paymentRequest) {
+//		String token = paymentRequest.getTokenId();
+//		String amountstripe = String.format("%.2f", GetterUtil.getDouble(paymentRequest.getAmount()));
+//		long amount = Common.parseLong(amountstripe.replace(".", ""), 0l);
+//		String currency = paymentRequest.getString(AppParams.CURRENCY);
+//		String reference = paymentRequest.getString(AppParams.REFERENCE);
+//		StripeService stripeService = new StripeService();
+//		Map result = stripeService.charge(token, amount, currency, "Pay with order " + reference);
+//		String id = ParamUtil.getString(result, AppParams.ID);
+//		String status = ParamUtil.getString(result, AppParams.STATUS, "");
+//
+//		Map insertData;
+//		String state;
+//		if (status.matches(AppParams.SUCCEEDED)) {
+//			state = AppParams.APPROVED;
+//			insertData = PaymentService.insert(id, token, AppParams.APPROVED, reference, samount, currency,
+//					null, null, result.toString(), method);
+//		} else {
+//			state = AppParams.FAIL;
+//			insertData = PaymentService.insert(null, token, AppParams.FAIL, reference, samount, currency,
+//					null, null, result.toString(), method);
+//		}
+//
+//		// response
+//		PaymentResponse paymentResponse = new PaymentResponse();
+//		paymentResponse.put("account_name", stripeAccountName);
+//		paymentResponse.put(AppParams.ID, insertData.get(AppParams.ID));
+//		paymentResponse.put(AppParams.PAY_ID, id);
+//		paymentResponse.put(AppParams.TOKEN_ID, token);
+//		paymentResponse.put(AppParams.REFERENCE, insertData.get(AppParams.REFERENCE));
+//		paymentResponse.put(AppParams.AMOUNT, insertData.get(AppParams.AMOUNT));
+//		paymentResponse.put(AppParams.CURRENCY, insertData.get(AppParams.CURRENCY));
+//		paymentResponse.put(AppParams.METHOD, insertData.get(AppParams.METHOD));
+//		Map payer = new HashMap();
+//		paymentResponse.put(AppParams.PAYER, payer);
+//		paymentResponse.put(AppParams.CREATE_TIME, insertData.get(AppParams.CREATE_TIME));
+//		paymentResponse.put(AppParams.UPDATE_TIME, null);
+//		paymentResponse.put(AppParams.STATE, state);
+//		if (state.matches(AppParams.FAIL)) {
+////						responeMap.put(AppParams.REASON, SystemError.PAYMENT_ERROR);
+//			paymentResponse.put(AppParams.REASON, result);
+//		} else {
+//			paymentResponse.put(AppParams.REASON, null);
+//		}
+//
+//		Map link = new HashMap();
+//		ArrayList links = new ArrayList();
+//		links.add(link);
+//		paymentResponse.put(AppParams.LINKS, links);
+//
+//		return ResponseData.ok(paymentResponse);
+//	}
 	private ResponseData<PaymentResponse> processPaypalPro(PaymentRequest paymentRequest) {
 		PaymentResponse paymentResponse = new PaymentResponse();
 		try {
@@ -154,48 +222,46 @@ public class PaymentService {
 				return ResponseData.ok(paymentResponse);
 			}
 
-			PaypalProCreateOrderRequest paymentUrlRequest = paypalProApiConnector.createOrderRequest(paymentRequest);
-			PaypalCreatePaymentUrlResponse paymentUrlResponse = paypalProApiConnector.createOrder(accessToken, paymentUrlRequest);
-			if ((paymentUrlResponse == null)) {
+			PaypalProCreateOrderRequest paymentCreateOrderRequest = paypalProApiConnector.createOrderRequest(paymentRequest);
+			PaypalProCreateOrderResponse paymentCreateOrderResponse = paypalProApiConnector.createOrder(accessToken, paymentCreateOrderRequest);
+			if ((paymentCreateOrderResponse == null)) {
 				errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
 				return ResponseData.ok(paymentResponse);
 			}
 
+
 			String state = "";
-			if (ResourceStates.CREATED.equals(paymentUrlResponse.getState())
-					&& paymentUrlResponse.getLinks().size() > 0) {
+			if (paymentCreateOrderResponse.getResponseCode() == HttpResponseStatus.CREATED.code() && paymentCreateOrderResponse.getLinks().size() > 0) {
 				state = ResourceStates.CREATED;
-				Link link = paymentUrlResponse.getLinks().get(0);
+				Link link = paymentCreateOrderResponse.getLinks().get(0);
 				link.setRel("approval_url");
 				ArrayList<Link> links = new ArrayList<>();
 				links.add(link);
 				paymentResponse.setLinks(links);
-
-				String approvalUrl = link.getHref();
-				if (approvalUrl.indexOf("token=") > 0) {
-					String tokenId = approvalUrl.substring(approvalUrl.indexOf("token=") + "token=".length());
-					paymentResponse.setTokenId(tokenId);
-				}
 			} else {
 				state = ResourceStates.FAIL;
+				Reason errorMap = new Reason();
+				errorMap.setMessage(paymentCreateOrderResponse.getMessage());
+				paymentResponse.setReason(errorMap);
 			}
 
 			Payment insertPayment = Payment.builder()
-					.id(paymentUrlResponse.getId())
+					.id(paymentCreateOrderResponse.getId())
 					.accessToken(accessToken)
 					.state(state)
-					.reference(paymentUrlResponse.getReference())
-					.method(paymentUrlResponse.getMethod())
-					.amount(paymentUrlResponse.getAmount())
-					.currency(paymentUrlResponse.getCurrency())
-					.token(paymentUrlResponse.getType())
-					.payerId("")
+					.reference(paymentRequest.getReference())
+					.method(paymentRequest.getMethod())
+					.amount(paymentRequest.getAmount())
+					.currency(paymentRequest.getCurrency())
+					.token(null)
+					.payerId(null)
 					.createDate(new Date())
-					.dataClob(paymentUrlResponse.toString())
+					.dataClob(paymentCreateOrderResponse.toString())
 					.build();
 			paymentRepository.save(insertPayment);//insert into db
 
-			paymentResponse.setAccountName(paypalAccountName);
+
+			paymentResponse.setAccountName(paypalProAccountName);
 			paymentResponse.setId(insertPayment.getId());
 			paymentResponse.setPayId(insertPayment.getPayId());
 			paymentResponse.setReference(insertPayment.getReference());

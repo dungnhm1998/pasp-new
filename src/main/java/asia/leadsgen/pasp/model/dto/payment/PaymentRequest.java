@@ -47,6 +47,8 @@ public class PaymentRequest  implements JsonInterface {
 	private Shipping shipping;
 	@JsonProperty(value = AppParams.BILLING)
 	private Shipping billing;
+	@JsonProperty(value = AppParams.ORDER_ID)
+	private String orderId;
 
 	@Data
 	public static class ItemRequest {

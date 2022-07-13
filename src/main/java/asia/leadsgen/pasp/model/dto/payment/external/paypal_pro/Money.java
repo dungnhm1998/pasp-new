@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Money {
 	@JsonProperty(value = AppParams.CURRENCY_CODE)
-	public java.lang.String currency;
+	String currency;
 	@JsonProperty(value = AppParams.VALUE)
-	public java.lang.String value;
+	String value;
 }

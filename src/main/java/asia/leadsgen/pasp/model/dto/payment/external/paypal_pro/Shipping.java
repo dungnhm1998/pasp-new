@@ -15,4 +15,6 @@ public class Shipping {
 	public ShippingAddress address;
 	@JsonProperty(value = AppParams.EMAIL_ADDRESS)
 	public String emailAddress;
+	@JsonProperty(value = AppParams.NAME)
+	public String name;
 }

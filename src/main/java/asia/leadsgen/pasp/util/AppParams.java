@@ -157,4 +157,27 @@ public class AppParams {
 	public static final String PAYER_ID = "payer_id";
 	public static final String BIRTH_DATE = "birth_date";
 	public static final String TAX_INFO = "tax_info";
+	public static final String ORDER_ID = "order_id";
+	public static final String BREAKDOWN = "breakdown";
+	public static final String BIC = "bic";
+	public static final String CARD_LAST_DIGITS = "card_last_digits";
+	public static final String IBAN_LAST_CHARS = "iban_last_chars";
+	public static final String EMAIL = "email";
+	public static final String BANCONTACT = "bancontact";
+	public static final String BLIK = "blik";
+	public static final String EPS = "eps";
+	public static final String GIROPAY = "giropay";
+	public static final String IDEAL = "ideal";
+	public static final String MYBANK = "mybank";
+	public static final String P24 = "p24";
+	public static final String SOFORT = "sofort";
+	public static final String TRUSTLY = "trustly";
+	public static final String TOKEN = "token";
+	public static final String PAYMENT_SOURCE = "payment_source";
+	public static final String STATUS = "status";
+	public static final String BANK_OF_USA = "bank_of_usa";
+	public static final String ANET = "anet";
+	public static final String BRAINTREE = "braintree";
+	public static final String STRIPE = "stripe";
+
 }

@@ -28,4 +28,7 @@ public class PaypalCreatePaymentUrlResponse implements JsonInterface {
 	private String state;
 	@JsonProperty(value = AppParams.LINKS)
 	ArrayList<Link> links;
+
+	//
+	int responseCode;
 }

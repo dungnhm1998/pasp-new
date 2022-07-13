@@ -93,7 +93,6 @@ public class AppUtil {
 		try {
 			t = sdf.parse(str);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return t;
@@ -113,7 +112,6 @@ public class AppUtil {
 		try {
 			date = dfIn.parse(dfIn.format(in));
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return date;
@@ -291,7 +289,6 @@ public class AppUtil {
 		try {
 			date = df.parse(in);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return date;
