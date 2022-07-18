@@ -50,5 +50,6 @@ public class AppConstants {
 	public static final String ACCEPT_LANGUAGE = "Accept-Language";
 	public static final String EN_US = "en_US";
 	public static final String ACCEPT = "Accept";
+	public static final String X_GGE4_DATE = "x-gge4-date";
 
 }

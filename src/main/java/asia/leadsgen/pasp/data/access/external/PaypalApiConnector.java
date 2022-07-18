@@ -156,7 +156,7 @@ public class PaypalApiConnector {
 
 		String typeExpress = paymentRequest.getType();
 		if (StringUtils.isEmpty(typeExpress) || !typeExpress.equalsIgnoreCase(AppParams.PAYPAL_EXPRESS)) {
-			ShippingAddress shipping = paymentRequest.getShippingAddress();
+			ShippingAddress shipping = paymentRequest.getShippingAddress().convertTpPaypal();
 
 			itemList.setShippingAddress(shipping);
 			transaction.setItemList(itemList);

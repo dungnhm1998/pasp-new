@@ -17,4 +17,10 @@ public class ShippingDetail {
 	NameDetail name;
 	@JsonProperty(value = AppParams.TYPE)
 	String type;
+
+	//stripe
+	@JsonProperty(value = AppParams.PHONE)
+	String phone;
+	@JsonProperty(value = AppParams.EMAIL)
+	String email;
 }

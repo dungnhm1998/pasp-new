@@ -135,6 +135,24 @@
 			<version>3.14.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>20.133.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.braintreepayments.gateway</groupId>
+			<artifactId>braintree-java</artifactId>
+			<version>2.91.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.authorize</groupId>
+			<artifactId>anet-java-sdk</artifactId>
+			<version>1.9.9</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

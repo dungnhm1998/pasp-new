@@ -50,6 +50,10 @@ public class PaymentRequest  implements JsonInterface {
 	@JsonProperty(value = AppParams.ORDER_ID)
 	private String orderId;
 
+	//anet
+	@JsonProperty(value = AppParams.IP)
+	private String ip;
+
 	@Data
 	public static class ItemRequest {
 		@JsonProperty(value = AppParams.CURRENCY)

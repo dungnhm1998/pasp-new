@@ -11,8 +11,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class ShippingAddress {
+
+	@JsonProperty(value = AppParams.NAME)//request
+	String name;
+	@JsonProperty(value = AppParams.ADDR_LINE_1)//request
+	String addrLine1;
+	@JsonProperty(value = AppParams.ADDR_LINE_2)//request
+	String addrLine2;
+
 	@JsonProperty(value = AppParams.RECIPIENT_NAME)//paypal
-	public String recipientName;
+	String recipientName;
 	@JsonProperty(value = AppParams.LINE1)//paypal
 	String line1;
 	@JsonProperty(value = AppParams.LINE2)//paypal
@@ -32,8 +40,6 @@ public class ShippingAddress {
 	String addressLine1;
 	@JsonProperty(value = AppParams.ADDRESS_LINE_2)//paypal pro
 	String addressLine2;
-	@JsonProperty(value = AppParams.ADDRESS_LINE_3)//paypal pro
-	String addressLine3;
 	@JsonProperty(value = AppParams.ADMIN_AREA_1)//paypal pro
 	String adminArea1;
 	@JsonProperty(value = AppParams.ADMIN_AREA_2)//paypal pro
@@ -42,8 +48,24 @@ public class ShippingAddress {
 	String adminArea3;
 	@JsonProperty(value = AppParams.ADMIN_AREA_4)//paypal pro
 	String adminArea4;
-	//
-
 	@JsonProperty(value = AppParams.ADDRESS_DETAILS)//paypal pro
 	AddressDetail addressDetail;
+
+
+	//convert
+	public ShippingAddress convertTpPaypal(){
+		this.recipientName = this.name;
+		this.line1 = this.addrLine1;
+		this.line2 = this.addrLine2;
+		return this;
+	}
+	public ShippingAddress convertTpPaypalPro(){
+		this.recipientName = this.name;
+		this.addressLine1 = this.addrLine1;
+		this.addressLine2 = this.addrLine2;
+		return this;
+	}
+
+
+
 }

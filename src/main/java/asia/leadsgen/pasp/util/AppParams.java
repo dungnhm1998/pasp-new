@@ -179,5 +179,16 @@ public class AppParams {
 	public static final String ANET = "anet";
 	public static final String BRAINTREE = "braintree";
 	public static final String STRIPE = "stripe";
+	public static final String SANDBOX = "sandbox";
+	public static final String IP = "ip";
+	public static final String ADDR_LINE_1= "addr_line_1";
+	public static final String ADDR_LINE_2 = "addr_line_2";
+	public static final String CARDHOLDER_NAME = "cardholder_name";
+	public static final String CC_EXPIRY = "cc_expiry";
+	public static final String TRANSACTION_TYPE = "transaction_type";
+	public static final String CC_NUMBER = "cc_number";
+	public static final String TRANSACTION_TAG = "transaction_tag";
+	public static final String AUTHORIZATION_NUM = "authorization_num";
+	public static final String CTR = "ctr";
 
 }
