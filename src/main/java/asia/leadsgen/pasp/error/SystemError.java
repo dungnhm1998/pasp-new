@@ -27,6 +27,7 @@ public class SystemError {
 	public static final SystemError OPERATION_NOT_PERMITTED = new SystemError(401002, "Operation not permitted", "");
 	public static final SystemError PAYMENT_ERROR = new SystemError(400002, "Payment error", "");
 	public static final SystemError INVALID_ENCRYPTION = new SystemError(400002, "Invalid encryption", "");
+	public static final SystemError INLVAID_PAYMENT_TRANSACTION = new SystemError(400002, "Inlvaid payment transaction", "");
 
 	public SystemError(int code, String message, String details) {
 		this.code = code;

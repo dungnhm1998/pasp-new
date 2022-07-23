@@ -1,5 +1,6 @@
 package asia.leadsgen.pasp.data.access.external;
 
+import asia.leadsgen.pasp.entity.PaymentAccount;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import net.authorize.Environment;
@@ -81,6 +82,41 @@ public class AnetApiConnector {
 		CreateTransactionResponse response = new CreateTransactionResponse();
 		response = controller.getApiResponse();
 
+		return response;
+	}
+
+	public CreateTransactionResponse refundTransaction(String transactionId, String transactionAmount, String last4, String expireDate, PaymentAccount account) {
+		ApiOperationBase.setEnvironment("PRODUCTION".equalsIgnoreCase(launchMod) ? Environment.PRODUCTION : Environment.SANDBOX);
+
+		MerchantAuthenticationType merchantAuthenticationType = new MerchantAuthenticationType();
+		String xapiKey = account == null ? apiKey : account.getAnetApiKey();
+		String xtransactionKey = account == null ? transactionKey : account.getAnetTransactionKey();
+		merchantAuthenticationType.setName(xapiKey);
+		merchantAuthenticationType.setTransactionKey(xtransactionKey);
+		ApiOperationBase.setMerchantAuthentication(merchantAuthenticationType);
+
+		// Create a payment object, last 4 of the credit card and expiration date are
+		// required
+		PaymentType paymentType = new PaymentType();
+		CreditCardType creditCard = new CreditCardType();
+		creditCard.setCardNumber(last4);
+		creditCard.setExpirationDate(expireDate);
+		paymentType.setCreditCard(creditCard);
+
+		// Create the payment transaction request
+		TransactionRequestType txnRequest = new TransactionRequestType();
+		txnRequest.setTransactionType(TransactionTypeEnum.REFUND_TRANSACTION.value());
+		txnRequest.setRefTransId(transactionId);
+		txnRequest.setAmount(new BigDecimal(transactionAmount.toString()));
+		txnRequest.setPayment(paymentType);
+
+		// Make the API Request
+		CreateTransactionRequest apiRequest = new CreateTransactionRequest();
+		apiRequest.setTransactionRequest(txnRequest);
+		CreateTransactionController controller = new CreateTransactionController(apiRequest);
+		controller.execute();
+
+		CreateTransactionResponse response = controller.getApiResponse();
 		return response;
 	}
 }

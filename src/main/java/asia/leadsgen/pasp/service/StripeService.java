@@ -14,6 +14,7 @@ import asia.leadsgen.pasp.model.dto.stripe.ChargeStripeRequest;
 import asia.leadsgen.pasp.model.dto.stripe.ChargeStripeResponse;
 import asia.leadsgen.pasp.util.AppConstants;
 import asia.leadsgen.pasp.util.AppParams;
+import asia.leadsgen.pasp.util.AppUtil;
 import asia.leadsgen.pasp.util.GetterUtil;
 import asia.leadsgen.pasp.util.ResourceStates;
 import com.stripe.exception.StripeException;
@@ -63,6 +64,7 @@ public class StripeService {
 				state = ResourceStates.APPROVED;
 				id = charge.getId();
 			} else {
+				id = AppUtil.genRandomId();
 				state = ResourceStates.FAIL;
 				Reason reason = new Reason();
 				reason.setDetails(charge.toString());

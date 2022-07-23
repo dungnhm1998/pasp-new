@@ -6,11 +6,14 @@ import asia.leadsgen.pasp.model.base.ResponseData;
 import asia.leadsgen.pasp.model.dto.payment.PaymentExample;
 import asia.leadsgen.pasp.model.dto.payment.PaymentRequest;
 import asia.leadsgen.pasp.model.dto.payment.PaymentResponse;
+import asia.leadsgen.pasp.model.dto.payment.refund.PaymentRefundRequest;
+import asia.leadsgen.pasp.model.dto.payment.refund.PaymentRefundResponse;
 import asia.leadsgen.pasp.model.dto.payment.token.BraintreeTokenResponse;
 import asia.leadsgen.pasp.model.dto.payment.token.PaypalProTokenResponse;
 import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteRequest;
 import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteResponse;
 import asia.leadsgen.pasp.service.PaymentExecuteService;
+import asia.leadsgen.pasp.service.PaymentRefundService;
 import asia.leadsgen.pasp.service.PaymentService;
 import asia.leadsgen.pasp.service.TokenService;
 import asia.leadsgen.pasp.util.AppConstants;
@@ -46,6 +49,8 @@ public class PaymentController {
 	PaymentExecuteService paymentExecuteService;
 	@Autowired
 	TokenService tokenService;
+	@Autowired
+	PaymentRefundService paymentRefundService;
 
 	@RequestMapping(method = RequestMethod.POST, path = "")
 	@ApiResponses(value = {
@@ -139,6 +144,28 @@ public class PaymentController {
 		AppUtil.checkAuthorize(burgerContext);
 
 		ResponseData<PaypalProTokenResponse> responseBody = tokenService.getTokenClientPaypal();
+
+		return responseBody;
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/refund")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Request success", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
+					@ExampleObject(name = "charge succees", summary = "charge success", value = PaymentExample.SUCCESS)})),
+			@ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
+					@ExampleObject(name = "Invalid payment info", summary = "Invalid payment info", value = PaymentExample.E400_INVALID_PAYMENT_INFO)})),
+			@ApiResponse(responseCode = "401", description = "Burger user id not exists", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
+					@ExampleObject(name = "User id not exists", summary = "User id not exists", value = PaymentExample.E401_UNAUTHORIZED)})),
+			@ApiResponse(responseCode = "500", description = "Internal Sever Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
+					@ExampleObject(name = "Something error", summary = "Something error", value = PaymentExample.INTERNAL_SEVER_ERROR)})),})
+	public ResponseData<PaymentRefundResponse> getTokenClientPaypal(
+			@RequestHeader(name = AppConstants.AUTHORIZE_HEADER, required = true) @ApiParam(value = "Access Token") String accessToken,
+			@RequestAttribute(name = AppConstants.BG_CONTEXT, required = true) BurgerContext burgerContext,
+			@RequestBody PaymentRefundRequest requestbody) {
+
+		AppUtil.checkAuthorize(burgerContext);
+
+		ResponseData<PaymentRefundResponse> responseBody = paymentRefundService.refund(requestbody);
 
 		return responseBody;
 	}

@@ -5,6 +5,7 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Balance;
 import com.stripe.model.Charge;
+import com.stripe.model.Refund;
 import com.stripe.net.RequestOptions;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
@@ -87,5 +88,24 @@ public class StripeApiConnector {
 		log.info("[STRIPE BALANCE RESPONSE] body = " + balance);
 
 		return balance;
+	}
+
+	public Refund createRefund(PaymentAccount account, String chargeId, long amount) throws StripeException {
+		log.info("api key = " + account.getStripeApiKey());
+		if (StringUtils.isNotEmpty(account.getStripeApiKey())) {
+			Stripe.apiKey = account.getStripeApiKey();
+		} else {
+			Stripe.apiKey = apiKey;
+		}
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("charge", chargeId);
+		if (amount > 0) {
+			params.put("amount", amount);
+		}
+
+		Refund refund = Refund.create(params);
+		log.info("[STRIPE REFUND RESPONSE] body = " + refund);
+
+		return refund;
 	}
 }

@@ -29,7 +29,7 @@ import asia.leadsgen.pasp.util.AppConstants;
 import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.AppUtil;
 import asia.leadsgen.pasp.util.GetterUtil;
-import asia.leadsgen.pasp.util.GlobalGatewayClient;
+import asia.leadsgen.pasp.util.BankOfUSAAPiConnector;
 import asia.leadsgen.pasp.util.ResourceStates;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
@@ -75,6 +75,8 @@ public class PaymentService {
 	BraintreeApiConnector braintreeApiConnector;
 	@Autowired
 	AnetApiConnector anetApiConnector;
+	@Autowired
+	BankOfUSAAPiConnector boaApiconnector;
 
 	@Autowired
 	PaymentRepository paymentRepository;
@@ -253,6 +255,7 @@ public class PaymentService {
 				paymentResponse.setLinks(links);
 
 			} else {
+				id = AppUtil.genRandomId();
 				state = ResourceStates.FAIL;
 				Reason reason = new Reason();
 				reason.setDetails(charge.toString());
@@ -316,6 +319,7 @@ public class PaymentService {
 				paymentResponse.setLinks(links);
 
 			} else {
+				id = AppUtil.genRandomId();
 				state = ResourceStates.FAIL;
 				Reason reason = new Reason();
 				reason.setDetails(charge.getMessage());
@@ -509,7 +513,7 @@ public class PaymentService {
 			log.info(chargeResponse);
 		}
 
-		String id = "";
+		String id = AppUtil.genRandomId();
 		String state = success ? ResourceStates.APPROVED:ResourceStates.FAIL;
 
 		Payment insertPayment = Payment.builder()
@@ -582,7 +586,7 @@ public class PaymentService {
 		BankUSAChargeRequest bankUSAChargeRequest = new BankUSAChargeRequest(cardNumber, amount, expire, cardHolderName);
 		BankUSAChargeResponse chargeResponse = null;
 		try {
-			chargeResponse = GlobalGatewayClient.purchase(bankUSAChargeRequest);
+			chargeResponse = boaApiconnector.purchase(bankUSAChargeRequest);
 
 			String state = "";
 			String dataClob = "";
@@ -594,6 +598,7 @@ public class PaymentService {
 				id = transactionTag + "|" + authorizationNum;
 				dataClob = chargeResponse.getCtr();
 			} else {
+				id = AppUtil.genRandomId();
 				state = ResourceStates.FAIL;
 				dataClob = chargeResponse.toString();
 			}

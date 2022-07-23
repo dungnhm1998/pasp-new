@@ -3,7 +3,7 @@ package asia.leadsgen.pasp.data.access.external;
 import asia.leadsgen.pasp.model.dto.payment.PaymentRequest;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.Payer;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalAccessTokenResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlResponse;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalRefundSaleRequest;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.ShippingAddress;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Amount;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.AmountBreakdown;
@@ -14,15 +14,17 @@ import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalAppContext
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProAuth2TokenResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderRequest;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderResponse;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProRefundRequest;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProRefundResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PurchaseUnit;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Shipping;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.ShippingDetail;
-import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteRequest;
+import asia.leadsgen.pasp.model.dto.payment.refund.PaymentRefundRequest;
 import asia.leadsgen.pasp.util.AppConstants;
+import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.GetterUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.FormBody;
@@ -35,7 +37,9 @@ import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @Component
@@ -58,8 +62,8 @@ public class PaypalProApiConnector {
 	public PaypalAccessTokenResponse createAccessToken() throws IOException {
 
 		RequestBody formBody = new FormBody.Builder()
-				.add("grant_type", "client_credentials")
-				.add("response_type", "token")
+				.add(AppConstants.GRANT_TYPE, AppConstants.CLIENT_CREDENTIALS)
+				.add(AppConstants.RESPONSE_TYPE, AppConstants.TOKEN)
 				.build();
 		String basicAuth = java.util.Base64.getEncoder().encodeToString(String.format("%s:%s", clientId, clientSecret).getBytes());
 		String tokenUri = accessTokenEndpoint;
@@ -71,7 +75,38 @@ public class PaypalProApiConnector {
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
 				.addHeader(AppConstants.ACCEPT, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
 				.addHeader(AppConstants.ACCEPT_LANGUAGE, AppConstants.EN_US)
-				.addHeader(AppConstants.AUTHORIZATION, "Basic " + basicAuth)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BASIC_ + basicAuth)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		ObjectMapper mapper = new ObjectMapper();
+		PaypalAccessTokenResponse accessTokenResponse = mapper.readValue(response.body().string(), PaypalAccessTokenResponse.class);
+		log.info("PaypalAccessTokenResponse result========:" + accessTokenResponse);
+		log.info("Generated paypal_pro access token = " + accessTokenResponse.getAccessToken());
+
+		return accessTokenResponse;
+	}
+
+
+	public PaypalAccessTokenResponse createAccessToken(String xClientId, String xClientSecret) throws IOException {
+
+		RequestBody formBody = new FormBody.Builder()
+				.add(AppConstants.GRANT_TYPE, AppConstants.CLIENT_CREDENTIALS)
+				.add(AppConstants.RESPONSE_TYPE, AppConstants.TOKEN)
+				.build();
+		String basicAuth = java.util.Base64.getEncoder().encodeToString(String.format("%s:%s", xClientId, xClientSecret).getBytes());
+		String tokenUri = accessTokenEndpoint;
+		log.info("clientId=" + xClientId + ", clientSecret=" + xClientSecret);
+
+		Request request = new Request.Builder()
+				.url(tokenUri)
+				.post(formBody)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
+				.addHeader(AppConstants.ACCEPT, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
+				.addHeader(AppConstants.ACCEPT_LANGUAGE, AppConstants.EN_US)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BASIC_ + basicAuth)
 				.build();
 
 		OkHttpClient client = new OkHttpClient();
@@ -215,7 +250,7 @@ public class PaypalProApiConnector {
 				.post(formBody)
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
-				.addHeader(AppConstants.AUTHORIZATION, "Bearer " + accessToken)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BEARER_ + accessToken)
 				.build();
 
 		OkHttpClient client = new OkHttpClient();
@@ -246,7 +281,7 @@ public class PaypalProApiConnector {
 				.url(captureURL)
 				.post(formBody)
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
-				.addHeader(AppConstants.AUTHORIZATION, "Basic " + accessToken)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BASIC_ + accessToken)
 				.build();
 
 		OkHttpClient client = new OkHttpClient();
@@ -274,7 +309,7 @@ public class PaypalProApiConnector {
 //				.post()
 				.addHeader(AppConstants.ACCEPT, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
 				.addHeader(AppConstants.ACCEPT_LANGUAGE, AppConstants.EN_US)
-				.addHeader(AppConstants.AUTHORIZATION, "Bearer " + accessToken)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BEARER_ + accessToken)
 				.build();
 
 		OkHttpClient client = new OkHttpClient();
@@ -292,5 +327,76 @@ public class PaypalProApiConnector {
 		auth2Token.setMessage(response.message());
 
 		return auth2Token;
+	}
+
+	public PaypalProRefundRequest createRefundRequest(PaymentRefundRequest requestbody) {
+		PaypalProRefundRequest request = new PaypalProRefundRequest();
+		Amount amount = new Amount();
+		amount.setValue(requestbody.getRefundInfo().getAmount().getTotal());
+		amount.setCurrency(requestbody.getRefundInfo().getAmount().getCurrency());
+		request.setAmount(amount);
+		return request;
+	}
+
+	public PaypalProRefundResponse refundSale(String accessToken, String captureId, PaypalProRefundRequest refundInfo) throws IOException {
+		PaypalProRefundResponse responseBody = new PaypalProRefundResponse();
+		RequestBody formBody = RequestBody.create(AppConstants.MEDIA_TYPE_JSON, refundInfo.toJson());
+
+		String captureURL = "/v2/payments/captures/" + captureId + "/refund";
+
+		Request request = new Request.Builder()
+				.url(captureURL)
+				.post(formBody)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BEARER_ + accessToken)
+				.addHeader(AppConstants.PAYPAL_REQUEST_ID, UUID.randomUUID().toString())
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		log.info("[PAYPAL PRO REFUND CAPTURE RESPONSE] code = " + response.code() + ", message = " + response.message());
+		log.info("[PAYPAL PRO REFUND CAPTURE RESPONSE] body : " + response.body());
+
+		if (response.body() != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			responseBody = mapper.readValue(response.body().string(), PaypalProRefundResponse.class);
+		}
+
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+
+		return responseBody;
+
+	}
+
+	public PaypalProRefundResponse getRefundDetail(String xClientId, String xClientSecret, String refundLink) throws IOException {
+		PaypalProRefundResponse responseBody = new PaypalProRefundResponse();
+
+		String basicAuth = Base64.getEncoder().encodeToString(String.format("%s:%s", xClientId, xClientSecret).getBytes());
+
+		log.info("[PAYPAL PRO REFUND DETAIL URL] : " + refundLink);
+
+		Request request = new Request.Builder()
+				.url(refundLink)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BASIC_ + basicAuth)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		log.info("[PAYPAL PRO REFUND DETAIL RESPONSE] code = " + response.code() + ", message = " + response.message());
+		log.info("[PAYPAL PRO REFUND DETAIL RESPONSE] body : " + response.body());
+
+		if (response.body() != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			responseBody = mapper.readValue(response.body().string(), PaypalProRefundResponse.class);
+		}
+
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+
+		return responseBody;
 	}
 }

@@ -11,6 +11,8 @@ import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentE
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentExecuteUrlResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlRequest;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlResponse;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalRefundSaleRequest;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalRefundSaleResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.RedirectUrls;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.ShippingAddress;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.Transaction;
@@ -19,7 +21,6 @@ import asia.leadsgen.pasp.util.AppConstants;
 import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.GetterUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.FormBody;
@@ -58,12 +59,18 @@ public class PaypalApiConnector {
 	public String getBase64encodedCredentials() {
 		String userpass = restAPIClientId + ":" + restAPIClientSecret;
 		String base64encodedUserPass = new String(Base64.encodeBase64(userpass.getBytes()));
-		return "Basic " + base64encodedUserPass;
+		return AppConstants.BASIC_ + base64encodedUserPass;
+	}
+
+	public String getBase64encodedCredentials(String clientID, String clientSecret) {
+		String userpass = clientID + ":" + clientSecret;
+		String base64encodedUserPass = new String(Base64.encodeBase64(userpass.getBytes()));
+		return AppConstants.BASIC_ + base64encodedUserPass;
 	}
 
 	public PaypalAccessTokenResponse createAccessToken() throws IOException {
 		RequestBody formBody = new FormBody.Builder()
-				.add("grant_type", "client_credentials")
+				.add(AppConstants.GRANT_TYPE, AppConstants.CLIENT_CREDENTIALS)
 				.build();
 
 		String tokenUri = "/v1/oauth2/token";
@@ -72,6 +79,33 @@ public class PaypalApiConnector {
 				.url(tokenUri)
 				.post(formBody)
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
+				.addHeader(AppConstants.AUTHORIZATION, getBase64encodedCredentials())
+				.addHeader(AppConstants.PAYPAL_PARTNER_ATTRIBUTION_ID, restBNCode)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = null;
+		response = client.newCall(request).execute();
+
+		ObjectMapper mapper = new ObjectMapper();
+		PaypalAccessTokenResponse responseBody = mapper.readValue(response.body().string(), PaypalAccessTokenResponse.class);
+		log.info("PaypalAccessTokenResponse result========:" + responseBody);
+		return responseBody;
+	}
+
+	public PaypalAccessTokenResponse createAccessToken(String auth, String bnCode) throws IOException {
+		RequestBody formBody = new FormBody.Builder()
+				.add(AppConstants.GRANT_TYPE, AppConstants.CLIENT_CREDENTIALS)
+				.build();
+
+		String tokenUri = "/v1/oauth2/token";
+
+		Request request = new Request.Builder()
+				.url(tokenUri)
+				.post(formBody)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
+				.addHeader(AppConstants.AUTHORIZATION, auth)
+				.addHeader(AppConstants.PAYPAL_PARTNER_ATTRIBUTION_ID, bnCode)
 				.build();
 
 		OkHttpClient client = new OkHttpClient();
@@ -186,7 +220,7 @@ public class PaypalApiConnector {
 				.post(formBody)
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
-				.addHeader(AppConstants.AUTHORIZATION, "Bearer " + accessToken)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BEARER_ + accessToken)
 				.addHeader(AppConstants.PAYPAL_PARTNER_ATTRIBUTION_ID, restBNCode)
 				.build();
 
@@ -225,7 +259,7 @@ public class PaypalApiConnector {
 				.post(formBody)
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
 				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
-				.addHeader(AppConstants.AUTHORIZATION, "Bearer " + accessToken)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BEARER_ + accessToken)
 				.addHeader(AppConstants.PAYPAL_PARTNER_ATTRIBUTION_ID, restBNCode)
 				.build();
 
@@ -238,6 +272,38 @@ public class PaypalApiConnector {
 		if (response.body() != null) {
 			ObjectMapper mapper = new ObjectMapper();
 			responseBody = mapper.readValue(response.body().string(), PaypalCreatePaymentExecuteUrlResponse.class);
+			return responseBody;
+		}
+
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+
+		return responseBody;
+	}
+
+	public PaypalRefundSaleResponse refundSale(String accessToken, String saleId, PaypalRefundSaleRequest refundInfo, String bnCode) throws IOException {
+		PaypalRefundSaleResponse responseBody = new PaypalRefundSaleResponse();
+		RequestBody formBody = RequestBody.create(AppConstants.MEDIA_TYPE_JSON, refundInfo.toJson()); // new
+		String approvalRequestURI = "/v1/payments/sale/" + saleId + "/refund";
+
+		Request request = new Request.Builder()
+				.url(approvalRequestURI)
+				.post(formBody)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BEARER_ + accessToken)
+				.addHeader(AppConstants.PAYPAL_PARTNER_ATTRIBUTION_ID, bnCode)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		log.info("[PAYPAL REFUND SALE RESPONSE] code = " + response.code() + ", message = " + response.message());
+		log.info("[PAYPAL REFUND SALE RESPONSE] body : " + response.body());
+
+		if (response.body() != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			responseBody = mapper.readValue(response.body().string(), PaypalRefundSaleResponse.class);
 			return responseBody;
 		}
 

@@ -271,4 +271,16 @@ public class AppParams {
 	public static final String SCOPE = "scope";
 	public static final String CUSTOMER_ID = "customer_id";
 	public static final String BALANCE = "balance";
+	public static final String TOTAL_REFUNDED_AMOUNT = "total_refunded_amount";
+	public static final String REFUND_FROM_TRANSACTION_FEE = "refund_from_transaction_fee";
+	public static final String REFUND_FROM_RECEIVED_AMOUNT = "refund_from_received_amount";
+	public static final String NOTE = "note";
+	public static final String PAYABLE_AMOUNT = "payable_amount";
+	public static final String CONVERTED_AMOUNT = "converted_amount";
+	public static final String NET_AMOUNT_BREAKDOWN = "net_amount_breakdown";
+	public static final String SELLER_PAYABLE_BREAKDOWN = "seller_payable_breakdown";
+	public static final String NET_AMOUNT_IN_RECEIVABLE_CURRENCY = "net_amount_in_receivable_currency";
+	public static final String GATEWAY_ID = "gateway_id";
+	public static final String PASSWORD = "password";
+
 }

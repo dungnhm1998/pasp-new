@@ -7,9 +7,9 @@ import lombok.Data;
 @Data
 public class ExchangeRate {
 	@JsonProperty(value = AppParams.SOURCE_CURRENCY)
-	String cvvCode;
+	String sourceCurrency;
 	@JsonProperty(value = AppParams.TARGET_CURRENCY)
-	String target_currency;
+	String targetCurrency;
 	@JsonProperty(value = AppParams.VALUE)
 	String value;
 }
