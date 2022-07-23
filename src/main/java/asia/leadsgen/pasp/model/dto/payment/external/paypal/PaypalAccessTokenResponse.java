@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Data
 public class PaypalAccessTokenResponse {
 	@JsonProperty(value = AppParams.ACCESS_TOKEN)
-	private String accessToken;
+	String accessToken;
 }

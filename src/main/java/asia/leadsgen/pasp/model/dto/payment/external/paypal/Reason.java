@@ -12,13 +12,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Reason {
 	@JsonProperty(value = AppParams.NAME)
-	private String name;
+	String name;
 	@JsonProperty(value = AppParams.MESSAGE)
-	private String message;
+	String message;
 	@JsonProperty(value = AppParams.DETAILS)
-	private String details;
+	String details;
 	@JsonProperty(value = AppParams.CODE)
-	private Integer code;
+	Integer code;
 	@JsonProperty(value = AppParams.METHOD)
-	private String method;
+	String method;
 }

@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 @Data
 public class Details {
 	@JsonProperty(value = AppParams.SHIPPING)
-	public String shipping;
+	String shipping;
 	@JsonProperty(value = AppParams.SUBTOTAL)
-	public String subtotal;
+	String subtotal;
 	@JsonProperty(value = AppParams.SHIPPING_DISCOUNT)
-	public String shippingDiscount;
+	String shippingDiscount;
 	@JsonProperty(value = AppParams.INSURANCE)
-	public String insurance;
+	String insurance;
 	@JsonProperty(value = AppParams.HANDLING_FEE)
-	public String handlingFee;
+	String handlingFee;
 	@JsonProperty(value = AppParams.TAX)
-	public String tax;
+	String tax;
 }

@@ -11,16 +11,19 @@ import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Item;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Money;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.NameDetail;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalAppContext;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProAuth2TokenResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderRequest;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PurchaseUnit;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Shipping;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.ShippingDetail;
+import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteRequest;
 import asia.leadsgen.pasp.util.AppConstants;
 import asia.leadsgen.pasp.util.GetterUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -36,18 +39,21 @@ import java.util.List;
 
 @Log4j2
 @Component
+@Data
 public class PaypalProApiConnector {
 
 	@Value("${paypal.pro.client.id}")
-	private static String clientId;
+	String clientId;
 	@Value("${paypal.pro.client.secret}")
-	private static String clientSecret;
+	String clientSecret;
 	@Value("${paypal.pro.access.token.endpoint}")
-	private static String accessTokenEndpoint;
+	String accessTokenEndpoint;
 	@Value("${paypal.pro.generate.client.token.endpoint}")
-	private static String clientTokenEndpoint;
+	String clientTokenEndpoint;
 	@Value("${paypal.pro.order.capture.endpoint}")
-	private static String orderCaptureEndpoint;
+	String orderCaptureEndpoint;
+	@Value("${paypal.pro.service.account_name}")
+	String paypalProAccountName;
 
 	public PaypalAccessTokenResponse createAccessToken() throws IOException {
 
@@ -200,7 +206,8 @@ public class PaypalProApiConnector {
 	}
 
 	public PaypalProCreateOrderResponse createOrder(String accessToken, PaypalProCreateOrderRequest paymentCreateOrderRequest) throws IOException {
-		RequestBody formBody = RequestBody.create(AppConstants.MEDIA_TYPE_JSON, paymentCreateOrderRequest.toJson()); // new
+		PaypalProCreateOrderResponse responseBody = new PaypalProCreateOrderResponse();
+		RequestBody formBody = RequestBody.create(AppConstants.MEDIA_TYPE_JSON, paymentCreateOrderRequest.toJson());
 		String createOrderURI = "/v2/checkout/orders";
 
 		Request request = new Request.Builder()
@@ -219,12 +226,71 @@ public class PaypalProApiConnector {
 
 		if (response.body() != null) {
 			ObjectMapper mapper = new ObjectMapper();
-			PaypalProCreateOrderResponse responseBody = mapper.readValue(response.body().string(), PaypalProCreateOrderResponse.class);
-			responseBody.setResponseCode(response.code());
-			responseBody.setMessage(response.message());
-			return responseBody;
+			responseBody = mapper.readValue(response.body().string(), PaypalProCreateOrderResponse.class);
 		}
 
-		return null;
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+		return responseBody;
+	}
+
+
+	public PaypalProCreateOrderResponse createOrderCapture(String payId, String accessToken) throws IOException {
+		PaypalProCreateOrderResponse responseBody = new PaypalProCreateOrderResponse();
+		RequestBody formBody = new FormBody.Builder()
+				.build();
+		String captureURL = String.format(orderCaptureEndpoint, payId);
+		log.info("clientId=" + clientId + ", clientSecret=" + clientSecret);
+
+		Request request = new Request.Builder()
+				.url(captureURL)
+				.post(formBody)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
+				.addHeader(AppConstants.AUTHORIZATION, "Basic " + accessToken)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		log.info("[PAYPAL PRO ORDER CAPTURE RESPONSE] code = " + response.code() + ", message = " + response.message());
+		log.info("[PAYPAL PRO ORDER CAPTURE RESPONSE] body : " + response.body());
+
+		if (response.body() != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			responseBody = mapper.readValue(response.body().string(), PaypalProCreateOrderResponse.class);
+		}
+
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+
+		return responseBody;
+	}
+
+
+	public PaypalProAuth2TokenResponse generateClientToken(String accessToken) throws IOException {
+		PaypalProAuth2TokenResponse auth2Token = new PaypalProAuth2TokenResponse();
+		Request request = new Request.Builder()
+				.url(clientTokenEndpoint)
+//				.post()
+				.addHeader(AppConstants.ACCEPT, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
+				.addHeader(AppConstants.ACCEPT_LANGUAGE, AppConstants.EN_US)
+				.addHeader(AppConstants.AUTHORIZATION, "Bearer " + accessToken)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		log.info("[PAYPAL PRO AUTH2 TOKEN RESPONSE] code = " + response.code() + ", message = " + response.message());
+		log.info("[PAYPAL PRO AUTH2 TOKEN RESPONSE] body : " + response.body());
+
+		if (response.body() != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			auth2Token = mapper.readValue(response.body().string(), PaypalProAuth2TokenResponse.class);
+		}
+
+		auth2Token.setResponseCode(response.code());
+		auth2Token.setMessage(response.message());
+
+		return auth2Token;
 	}
 }

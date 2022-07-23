@@ -28,4 +28,8 @@ public class PaypalAppContext {
 	StoredPaymentSource storedPaymentSource;
 	@JsonProperty(value = AppParams.USER_ACTION)
 	String userAction;
+	@JsonProperty(value = AppParams.PAYMENT_PATTERN)
+	String paymentPattern;
+	@JsonProperty(value = AppParams.PREFERRED_PAYMENT_SOURCE)
+	String preferredPaymentSource;
 }

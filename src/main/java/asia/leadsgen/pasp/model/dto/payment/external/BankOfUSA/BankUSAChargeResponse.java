@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BankUSAChargeResponse {
 	@JsonProperty(value = AppParams.TRANSACTION_TAG)
-	private Long transactionTag;
+	Long transactionTag;
 	@JsonProperty(value = AppParams.AUTHORIZATION_NUM)
-	private String authorizationNum;
+	String authorizationNum;
 	@JsonProperty(value = AppParams.CTR)
-	private String ctr;
+	String ctr;
 
 	//
 	int responseCode;

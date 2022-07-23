@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class ItemList {
 
 	@JsonProperty(value = AppParams.ITEMS)
-	private ArrayList<Item> items;
+	ArrayList<Item> items;
 	@JsonProperty(value = AppParams.SHIPPING_ADDRESS)
-	private ShippingAddress shippingAddress;
+	ShippingAddress shippingAddress;
 }

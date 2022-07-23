@@ -4,9 +4,7 @@ import asia.leadsgen.pasp.model.dto.common.JsonInterface;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.Link;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.Payer;
 import asia.leadsgen.pasp.util.AppParams;
-import asia.leadsgen.pasp.util.JsonNullToEmptySerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -15,13 +13,13 @@ import java.util.List;
 @Data
 public class PaypalProCreateOrderResponse implements JsonInterface {
 	@JsonProperty(value = AppParams.ID)
-	private String id;
+	String id;
 	@JsonProperty(value = AppParams.INTENT)
-	private String intent;
+	String intent;
 	@JsonProperty(value = AppParams.CREATE_TIME)
-	private String createTime;
+	String createTime;
 	@JsonProperty(value = AppParams.UPDATE_TIME)
-	private String updateTime;
+	String updateTime;
 	@JsonProperty(value = AppParams.LINKS)
 	ArrayList<Link> links;
 	@JsonProperty(value = AppParams.PAYER)

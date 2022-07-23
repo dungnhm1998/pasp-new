@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class BankUSAChargeRequest implements JsonInterface {
 	@JsonProperty(value = AppParams.CC_NUMBER)
-	private String cc_number;
+	String cc_number;
 	@JsonProperty(value = AppParams.TRANSACTION_TYPE)
-	private String transaction_type = "00";
+	String transaction_type = "00";
 	@JsonProperty(value = AppParams.AMOUNT)
-	private String amount;
+	String amount;
 	@JsonProperty(value = AppParams.CC_EXPIRY)
-	private String cc_expiry;
+	String cc_expiry;
 	@JsonProperty(value = AppParams.CARDHOLDER_NAME)
-	private String cardholder_name;
+	String cardholder_name;
 
 	public BankUSAChargeRequest(String cc_number, String amount, String cc_expiry, String cardholder_name) {
 		this.cc_number = cc_number;

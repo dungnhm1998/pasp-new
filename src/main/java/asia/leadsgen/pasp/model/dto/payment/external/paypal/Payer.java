@@ -10,16 +10,23 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class Payer {
 	@JsonProperty(value = AppParams.PAYMENT_METHOD)
-	@JsonInclude(value = JsonInclude.Include.NON_NULL)
 	String paymentMethod;
 	@JsonProperty(value = AppParams.NAME)
-	@JsonInclude(value = JsonInclude.Include.NON_NULL)
 	String name;
+	@JsonProperty(value = AppParams.FUNDING_INSTRUMENTS)
+	List<FundingInstrument> fundingInstruments;
+	@JsonProperty(value = AppParams.PAYER_INFO)
+	PayerInfo payerInfo;
+	@JsonProperty(value = AppParams.STATUS)
+	String status;
 
 	//paypal pro
 	@JsonProperty(value = AppParams.EMAIL_ADDRESS)

@@ -14,6 +14,8 @@ public class ShippingAddress {
 
 	@JsonProperty(value = AppParams.NAME)//request
 	String name;
+	@JsonProperty(value = AppParams.EMAIL)//request
+	String email;
 	@JsonProperty(value = AppParams.ADDR_LINE_1)//request
 	String addrLine1;
 	@JsonProperty(value = AppParams.ADDR_LINE_2)//request
@@ -35,6 +37,10 @@ public class ShippingAddress {
 	String state;
 	@JsonProperty(value = AppParams.PHONE)//paypal
 	String phone;
+	@JsonProperty(value = AppParams.NORMALIZATION_STATUS)//paypal
+	String normalization_status;
+	@JsonProperty(value = AppParams.TYPE)//paypal
+	String type;
 
 	@JsonProperty(value = AppParams.ADDRESS_LINE_1)//paypal pro
 	String addressLine1;

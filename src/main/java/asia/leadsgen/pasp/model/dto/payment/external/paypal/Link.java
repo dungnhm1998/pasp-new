@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Link {
 	@JsonProperty(value = AppParams.METHOD)
-	private String method;
+	String method;
 	@JsonProperty(value = AppParams.REL)
-	private String rel;
+	String rel;
 	@JsonProperty(value = AppParams.HREF)
-	private String href;
+	String href;
 }

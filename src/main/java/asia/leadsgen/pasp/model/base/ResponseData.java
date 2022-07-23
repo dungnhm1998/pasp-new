@@ -1,15 +1,14 @@
 package asia.leadsgen.pasp.model.base;
 
 import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.util.AppParams;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.http.HttpStatus;
 
 import java.io.Serializable;
 import java.util.List;
@@ -21,20 +20,41 @@ import java.util.List;
 @AllArgsConstructor
 public class ResponseData<T> implements Serializable {
 
-	private int status;
-	private String message;
+	@JsonProperty(value = AppParams.CODE)
+	int code;
+	@JsonProperty(value = AppParams.MESSAGE)
+	String message;
+	@JsonProperty(value = AppParams.DATA)
+	CommonData<T> commonData;
+	@JsonProperty(value = AppParams.ERROR)
+	List<Error> error;
 
-	@JsonProperty(value = "errors")
-	@JsonInclude(value = Include.NON_NULL)
-	private List<String> errors;
+	@lombok.Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class CommonData<T> {
+		@JsonProperty(value = AppParams.TOTAL)
+		@JsonInclude(value = JsonInclude.Include.NON_NULL)
+		int total;
+		@JsonProperty(value = AppParams.PAGE)
+		@JsonInclude(value = JsonInclude.Include.NON_NULL)
+		int page;
+		@JsonProperty(value = AppParams.PAGE_SIZE)
+		@JsonInclude(value = JsonInclude.Include.NON_NULL)
+		int pageSize;
+		@JsonProperty(value = AppParams.RESULT)
+		T result;
+	}
 
-	@JsonProperty(value = "response_data")
-	@JsonInclude(value = Include.NON_NULL)
-	private T responseData;
-
-	@JsonProperty(value = "infomation_link")
-	@JsonInclude(value = Include.NON_EMPTY)
-	private String infomationLink;
+	@lombok.Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class Error {
+		@JsonProperty(value = AppParams.SERVER_CODE)
+		int serverCode;
+		@JsonProperty(value = AppParams.MESSAGE)
+		String reason;
+	}
 
 	public static <T> ResponseData<T> ok() {
 		return restResult(SystemError.RESPONSE_OK, null);
@@ -67,9 +87,13 @@ public class ResponseData<T> implements Serializable {
 
 	private static <T> ResponseData<T> restResult(SystemError systemError, T responseData) {
 		ResponseData<T> apiResult = new ResponseData<>();
-		apiResult.setStatus(systemError.getCode());
+		apiResult.setCode(systemError.getCode());
 		apiResult.setMessage(systemError.getMessage());
-		apiResult.setResponseData(responseData);
+
+		CommonData<T> data = new CommonData<T>();
+		data.setResult(responseData);
+
+		apiResult.setCommonData(data);
 		return apiResult;
 	}
 

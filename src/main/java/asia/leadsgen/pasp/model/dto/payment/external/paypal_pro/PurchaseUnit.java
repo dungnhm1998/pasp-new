@@ -18,6 +18,8 @@ public class PurchaseUnit {
 	String customId;
 	@JsonProperty(value = AppParams.DESCRIPTION)
 	String description;
+	@JsonProperty(value = AppParams.ID)
+	String id;
 	@JsonProperty(value = AppParams.INVOICE_ID)
 	String invoiceId;
 	@JsonProperty(value = AppParams.ITEMS)
@@ -26,6 +28,8 @@ public class PurchaseUnit {
 	Payee payee;
 	@JsonProperty(value = AppParams.PAYMENT_INSTRUCTION)
 	PaymentInstruction paymentInstruction;
+	@JsonProperty(value = AppParams.PAYMENTS)
+	List<PurchaseUnitPayment> payments;
 	@JsonProperty(value = AppParams.REFERENCE_ID)
 	String reference_id;
 	@JsonProperty(value = AppParams.SHIPPING)

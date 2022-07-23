@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class RedirectUrls {
 	@JsonProperty(value = AppParams.RETURN_URL)
-	public String return_url;
+	String return_url;
 	@JsonProperty(value = AppParams.CANCEL_URL)
-	public String cancel_url;
+	String cancel_url;
 }

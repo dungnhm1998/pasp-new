@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Data
 public class PaymentOptions {
 	@JsonProperty(value = AppParams.ALLOWED_PAYMENT_METHOD)
-	public String allowed_payment_method;
+	String allowed_payment_method;
 }

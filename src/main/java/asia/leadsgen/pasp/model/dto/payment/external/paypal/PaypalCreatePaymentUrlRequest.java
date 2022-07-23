@@ -15,11 +15,11 @@ import java.util.ArrayList;
 @Data
 public class PaypalCreatePaymentUrlRequest implements JsonInterface {
 	@JsonProperty(value = AppParams.INTENT)
-	public String intent;
+	String intent;
 	@JsonProperty(value = AppParams.PAYER)
-	public Payer payer;
+	Payer payer;
 	@JsonProperty(value = AppParams.TRANSACTIONS)
-	public ArrayList<Transaction> transactions;
+	ArrayList<Transaction> transactions;
 	@JsonProperty(value = AppParams.REDIRECT_URLS)
-	public RedirectUrls redirect_urls;
+	RedirectUrls redirect_urls;
 }

@@ -54,24 +54,15 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
 
 @Service
 @Transactional
 @Log4j2
 public class PaymentService {
 
-	@Value("${paypal.service.merchant_id}")
+	@Value("${aes.encryption.key}")
 	private static String aesEncryptionKey;
-	@Value("${paypal.service.merchant_id}")
-	private static String paypalAccountName;
-	@Value("${paypal.service.merchant_id}")
-	private static String paypalProAccountName;
-	@Value("${paypal.service.merchant_id}")
-	private static String stripeAccountName;
-	@Value("${paypal.service.merchant_id}")
-	private static String anetAccountName;
-	@Value("${paypal.service.merchant_id}")
+	@Value("${global.gateway.client.account_name}")
 	private static String bankOfUSAAccountName;
 
 	@Autowired
@@ -90,45 +81,40 @@ public class PaymentService {
 
 	SimpleDateFormat dateFormat = new SimpleDateFormat(AppConstants.DEFAULT_DATE_TIME_FORMAT_PATTERN);
 
-	public ResponseData<PaymentResponse> paymentCharge(String userId, PaymentRequest paymentRequest) {
+	public ResponseData<PaymentResponse> paymentCharge(PaymentRequest paymentRequest) {
 
-		ResponseData<PaymentResponse> paymentResponse = new ResponseData<>();
+		PaymentResponse paymentResponse = new PaymentResponse();
 		String method = paymentRequest.getMethod();
 		if (AppParams.PAYPAL.matches(method)) {
-			return processPaypal(paymentRequest);
+			return processPaypal(paymentResponse, paymentRequest);
 		} else if (AppParams.PAYPAL_PRO.matches(method)) {
-			return processPaypalPro(paymentRequest);
+			return processPaypalPro(paymentResponse, paymentRequest);
 		} else if (AppParams.STRIPE.matches(method)) {
-			return processStripe(paymentRequest);
+			return processStripe(paymentResponse, paymentRequest);
 		} else if (AppParams.BRAINTREE.matches(method)) {
-			return processBraintree(paymentRequest);
+			return processBraintree(paymentResponse, paymentRequest);
 		} else if (AppParams.ANET.matches(method)) {
-			return processAnet(paymentRequest);
+			return processAnet(paymentResponse, paymentRequest);
 		} else if (AppParams.BANK_OF_USA.matches(method)) {
-			return processBankOfUSA(paymentRequest);
+			return processBankOfUSA(paymentResponse, paymentRequest);
 		} else {
-//			TODO;
+			return errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
 		}
-
-		return paymentResponse;
 	}
 
-	private ResponseData<PaymentResponse> processPaypal(PaymentRequest paymentRequest) {
-		PaymentResponse paymentResponse = new PaymentResponse();
+	private ResponseData<PaymentResponse> processPaypal(PaymentResponse paymentResponse, PaymentRequest paymentRequest) {
 		try {
 			PaypalAccessTokenResponse accessTokenResponse = paypalApiConnector.createAccessToken();
 
 			String accessToken = accessTokenResponse.getAccessToken();
 			if ((accessToken == null) || accessToken.equalsIgnoreCase("")) {
-				errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
-				return ResponseData.ok(paymentResponse);
+				return errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
 			}
 
 			PaypalCreatePaymentUrlRequest paymentUrlRequest = paypalApiConnector.createPaymentUrlRequest(paymentRequest);
 			PaypalCreatePaymentUrlResponse paymentUrlResponse = paypalApiConnector.createPaymentUrl(accessToken, paymentUrlRequest);
-			if ((paymentUrlResponse == null)) {
-				errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
-				return ResponseData.ok(paymentResponse);
+			if ((HttpResponseStatus.CREATED.code() != paymentUrlResponse.getResponseCode())) {
+				return errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
 			}
 
 			String state = "";
@@ -164,7 +150,7 @@ public class PaymentService {
 					.build();
 			paymentRepository.save(insertPayment);//insert into db
 
-			paymentResponse.setAccountName(paypalAccountName);
+			paymentResponse.setAccountName(paypalApiConnector.getPaypalAccountName());
 			paymentResponse.setId(insertPayment.getId());
 			paymentResponse.setPayId(insertPayment.getPayId());
 			paymentResponse.setReference(insertPayment.getReference());
@@ -183,24 +169,17 @@ public class PaymentService {
 		return ResponseData.ok(paymentResponse);
 	}
 
-	private ResponseData<PaymentResponse> processPaypalPro(PaymentRequest paymentRequest) {
-		PaymentResponse paymentResponse = new PaymentResponse();
+	private ResponseData<PaymentResponse> processPaypalPro(PaymentResponse paymentResponse, PaymentRequest paymentRequest) {
 		try {
 			PaypalAccessTokenResponse accessTokenResponse = paypalProApiConnector.createAccessToken();
 
 			String accessToken = accessTokenResponse.getAccessToken();
-			if ((accessToken == null) || accessToken.equalsIgnoreCase("")) {
-				errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
-				return ResponseData.ok(paymentResponse);
+			if (StringUtils.isEmpty(accessToken)) {
+				return errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
 			}
 
 			PaypalProCreateOrderRequest paymentCreateOrderRequest = paypalProApiConnector.createOrderRequest(paymentRequest);
 			PaypalProCreateOrderResponse paymentCreateOrderResponse = paypalProApiConnector.createOrder(accessToken, paymentCreateOrderRequest);
-			if ((paymentCreateOrderResponse == null)) {
-				errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
-				return ResponseData.ok(paymentResponse);
-			}
-
 
 			String state = "";
 			if (paymentCreateOrderResponse.getResponseCode() == HttpResponseStatus.CREATED.code() && paymentCreateOrderResponse.getLinks().size() > 0) {
@@ -233,7 +212,7 @@ public class PaymentService {
 			paymentRepository.save(insertPayment);//insert into db
 
 
-			paymentResponse.setAccountName(paypalProAccountName);
+			paymentResponse.setAccountName(paypalProApiConnector.getPaypalProAccountName());
 			paymentResponse.setId(insertPayment.getId());
 			paymentResponse.setPayId(insertPayment.getPayId());
 			paymentResponse.setReference(insertPayment.getReference());
@@ -252,8 +231,7 @@ public class PaymentService {
 		return ResponseData.ok(paymentResponse);
 	}
 
-	private ResponseData<PaymentResponse> processStripe(PaymentRequest paymentRequest) {
-		PaymentResponse paymentResponse = new PaymentResponse();
+	private ResponseData<PaymentResponse> processStripe(PaymentResponse paymentResponse, PaymentRequest paymentRequest) {
 		try {
 			String token = paymentRequest.getTokenId();
 			String amountStripe = String.format("%.2f", GetterUtil.getDouble(paymentRequest.getAmount()));
@@ -297,7 +275,7 @@ public class PaymentService {
 			paymentRepository.save(insertPayment);//insert into db
 
 			// response
-			paymentResponse.setAccountName(stripeAccountName);
+			paymentResponse.setAccountName(stripeApiConnector.getStripeAccountName());
 			paymentResponse.setId(insertPayment.getId());
 			paymentResponse.setPayId(id);
 			paymentResponse.setReference(insertPayment.getReference());
@@ -311,13 +289,13 @@ public class PaymentService {
 
 		} catch (StripeException e) {
 			e.printStackTrace();
+			return  ResponseData.failed(SystemError.PAYMENT_ERROR);
 		}
 
 		return ResponseData.ok(paymentResponse);
 	}
 
-	private ResponseData<PaymentResponse> processBraintree(PaymentRequest paymentRequest) {
-		PaymentResponse paymentResponse = new PaymentResponse();
+	private ResponseData<PaymentResponse> processBraintree(PaymentResponse paymentResponse, PaymentRequest paymentRequest) {
 		try {
 			String token = paymentRequest.getTokenId();
 			String amountstripe = String.format("%.2f", GetterUtil.getDouble(paymentRequest.getAmount()));
@@ -360,7 +338,6 @@ public class PaymentService {
 			paymentRepository.save(insertPayment);//insert into db
 
 			// response
-			paymentResponse.setAccountName(stripeAccountName);
 			paymentResponse.setId(insertPayment.getId());
 			paymentResponse.setPayId(id);
 			paymentResponse.setReference(insertPayment.getReference());
@@ -374,13 +351,13 @@ public class PaymentService {
 
 		} catch (StripeException e) {
 			e.printStackTrace();
+			return  ResponseData.failed(SystemError.PAYMENT_ERROR);
 		}
 		return ResponseData.ok(paymentResponse);
 
 	}
 
-	private ResponseData<PaymentResponse> processAnet(PaymentRequest paymentRequest) {
-		PaymentResponse paymentResponse = new PaymentResponse();
+	private ResponseData<PaymentResponse> processAnet(PaymentResponse paymentResponse, PaymentRequest paymentRequest) {
 		String token = paymentRequest.getTokenId();
 		String amountStripe = paymentRequest.getAmount();
 		double amount = GetterUtil.getDouble(amountStripe);
@@ -553,7 +530,7 @@ public class PaymentService {
 		paymentRepository.save(insertPayment);//insert into db
 
 		// response
-		paymentResponse.setAccountName(stripeAccountName);
+		paymentResponse.setAccountName(anetApiConnector.getAnetAccountName());
 		paymentResponse.setId(insertPayment.getId());
 		paymentResponse.setPayId(id);
 		paymentResponse.setReference(insertPayment.getReference());
@@ -568,8 +545,7 @@ public class PaymentService {
 		return ResponseData.ok(paymentResponse);
 	}
 
-	private ResponseData<PaymentResponse> processBankOfUSA(PaymentRequest paymentRequest) {
-		PaymentResponse paymentResponse = new PaymentResponse();
+	private ResponseData<PaymentResponse> processBankOfUSA(PaymentResponse paymentResponse, PaymentRequest paymentRequest) {
 		String token = paymentRequest.getTokenId();
 		String amount = paymentRequest.getAmount();
 		String currency = paymentRequest.getCurrency();
@@ -658,11 +634,12 @@ public class PaymentService {
 
 		} catch (NoSuchAlgorithmException | InvalidKeyException | IOException e) {
 			e.printStackTrace();
+			return  ResponseData.failed(SystemError.PAYMENT_ERROR);
 		}
 		return ResponseData.ok(paymentResponse);
 	}
 
-	private PaymentResponse errorResponse(PaymentResponse paymentResponse, PaymentRequest paymentRequest, String message) {
+	private ResponseData<PaymentResponse> errorResponse(PaymentResponse paymentResponse, PaymentRequest paymentRequest, String message) {
 
 		Payment insertPayment = Payment.builder()
 				.id(AppUtil.genRandomId())
@@ -694,9 +671,7 @@ public class PaymentService {
 		paymentResponse.setLinks(new ArrayList<>());
 		paymentResponse.setTokenId("");
 
-		return paymentResponse;
+		return ResponseData.ok(paymentResponse);
 	}
 
-	public ResponseData<PaymentResponse> paymentExecute(String userId, PaymentRequest requestBody) {
-	}
 }

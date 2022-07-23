@@ -1,5 +1,6 @@
 package asia.leadsgen.pasp.data.access.external;
 
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import net.authorize.Environment;
 import net.authorize.api.contract.v1.CreateTransactionRequest;
@@ -21,16 +22,19 @@ import java.math.RoundingMode;
 
 @Log4j2
 @Component
+@Data
 public class AnetApiConnector {
 	@Value("${anet.service.api.key}")
-	private static String apiKey;
+	String apiKey;
 	@Value("${anet.service.transaction.key}")
-	private static String transactionKey;
+	String transactionKey;
 	@Value("${anet.service.launchMod}")
-	private static String launchMod;
+	String launchMod;
+	@Value("${anet.service.account_name}")
+	String anetAccountName;
 
 	public CreateTransactionResponse chargeCreditCard(CreditCardType card, CustomerDataType customer,
-															 CustomerAddressType shipTo, CustomerAddressType billTo, double amount, String ip) {
+													  CustomerAddressType shipTo, CustomerAddressType billTo, double amount, String ip) {
 
 		// Set the request to operate in either the sandbox or production environment
 		ApiOperationBase.setEnvironment(

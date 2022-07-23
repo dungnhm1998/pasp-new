@@ -7,16 +7,20 @@ import asia.leadsgen.pasp.model.dto.payment.external.paypal.Item;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.ItemList;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.Payer;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalAccessTokenResponse;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentExecuteUrlRequest;
+import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentExecuteUrlResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlRequest;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlResponse;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.RedirectUrls;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.ShippingAddress;
 import asia.leadsgen.pasp.model.dto.payment.external.paypal.Transaction;
+import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteRequest;
 import asia.leadsgen.pasp.util.AppConstants;
 import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.GetterUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -35,18 +39,21 @@ import java.util.List;
 
 @Log4j2
 @Component
+@Data
 public class PaypalApiConnector {
 
 	@Value("${paypal.service.merchant_id}")
-	private String restApiMerchantId;
+	String restApiMerchantId;
 	@Value("${paypal.service.client_id}")
-	private String restAPIClientId;
+	String restAPIClientId;
 	@Value("${paypal.service.client_secret}")
-	private String restAPIClientSecret;
+	String restAPIClientSecret;
 	@Value("${paypal.service.sbn_code}")
-	private String restBNCode;
+	String restBNCode;
 	@Value("${paypal.service.ssl_version_to_use}")
-	private String sslVersionToUse;
+	String sslVersionToUse;
+	@Value("${paypal.service.account_name}")
+	String paypalAccountName;
 
 	public String getBase64encodedCredentials() {
 		String userpass = restAPIClientId + ":" + restAPIClientSecret;
@@ -170,6 +177,7 @@ public class PaypalApiConnector {
 	}
 
 	public PaypalCreatePaymentUrlResponse createPaymentUrl(String accessToken, PaypalCreatePaymentUrlRequest paymentUrlRequest) throws IOException {
+		PaypalCreatePaymentUrlResponse responseBody = new PaypalCreatePaymentUrlResponse();
 		RequestBody formBody = RequestBody.create(AppConstants.MEDIA_TYPE_JSON, paymentUrlRequest.toJson()); // new
 		String approvalRequestURI = "/v1/payments/payment";
 
@@ -188,12 +196,54 @@ public class PaypalApiConnector {
 		log.info("[PAYPAL APPROVAL URL RESPONSE] code = " + response.code() + ", message = " + response.message());
 		log.info("[PAYPAL APPROVAL URL RESPONSE] body : " + response.body());
 
-		if (response.code() == HttpResponseStatus.CREATED.code() && response.body() != null) {
+		if (response.body() != null) {
 			ObjectMapper mapper = new ObjectMapper();
-			PaypalCreatePaymentUrlResponse responseBody = mapper.readValue(response.body().string(), PaypalCreatePaymentUrlResponse.class);
+			responseBody = mapper.readValue(response.body().string(), PaypalCreatePaymentUrlResponse.class);
+		}
+
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+
+		return responseBody;
+	}
+
+	public PaypalCreatePaymentExecuteUrlRequest createPaymentExecuteUrlRequest(PaymentExecuteRequest paymentExeRq) {
+
+		PaypalCreatePaymentExecuteUrlRequest request = new PaypalCreatePaymentExecuteUrlRequest();
+		request.setPayerId(paymentExeRq.getPayerId());
+		return request;
+	}
+
+
+	public PaypalCreatePaymentExecuteUrlResponse createPaymentExecuteUrl(String accessToken, PaypalCreatePaymentExecuteUrlRequest executeUrlRequest, PaymentExecuteRequest paymentExeRq) throws IOException {
+		PaypalCreatePaymentExecuteUrlResponse responseBody = new PaypalCreatePaymentExecuteUrlResponse();
+		RequestBody formBody = RequestBody.create(AppConstants.MEDIA_TYPE_JSON, executeUrlRequest.toJson()); // new
+		String approvalRequestURI = "/v1/payments/payment" + paymentExeRq.getPayId() + "/execute";
+
+		Request request = new Request.Builder()
+				.url(approvalRequestURI)
+				.post(formBody)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_FORM_URLENCODED)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
+				.addHeader(AppConstants.AUTHORIZATION, "Bearer " + accessToken)
+				.addHeader(AppConstants.PAYPAL_PARTNER_ATTRIBUTION_ID, restBNCode)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		log.info("[PAYPAL APPROVAL URL RESPONSE] code = " + response.code() + ", message = " + response.message());
+		log.info("[PAYPAL APPROVAL URL RESPONSE] body : " + response.body());
+
+		if (response.body() != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			responseBody = mapper.readValue(response.body().string(), PaypalCreatePaymentExecuteUrlResponse.class);
 			return responseBody;
 		}
 
-		return null;
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+
+		return responseBody;
 	}
 }

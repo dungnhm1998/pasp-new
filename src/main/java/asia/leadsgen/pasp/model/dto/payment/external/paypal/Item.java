@@ -11,17 +11,17 @@ import lombok.NoArgsConstructor;
 @Data
 public class Item {
 	@JsonProperty(value = AppParams.NAME)
-	private String name;
+	String name;
 	@JsonProperty(value = AppParams.DESCRIPTION)
-	private String description;
+	String description;
 	@JsonProperty(value = AppParams.QUANTITY)
-	private String quantity;
+	String quantity;
 	@JsonProperty(value = AppParams.PRICE)
-	private String price;
+	String price;
 	@JsonProperty(value = AppParams.TAX)
-	private String tax;
+	String tax;
 	@JsonProperty(value = AppParams.SKU)
-	private String sku;
+	String sku;
 	@JsonProperty(value = AppParams.CURRENCY)
-	private String currency;
+	String currency;
 }

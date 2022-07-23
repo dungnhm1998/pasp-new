@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 public class Amount {
 	@JsonProperty(value = AppParams.CURRENCY)
-	public String currency;
+	String currency;
 	@JsonProperty(value = AppParams.TOTAL)
-	public String total;
+	String total;
 	@JsonProperty(value = AppParams.DETAILS)
-	public Details details;
+	Details details;
 }

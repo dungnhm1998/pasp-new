@@ -41,6 +41,7 @@ public class ResourceStates {
 	public static final String DELIVERED = "delivered";
 	public static final String PROCESSED = "processed";
 	public static final String READY = "ready";
+	public static final String COMPLETED = "completed";
 	/**
 	 * ****** charge state **********
 	 */
