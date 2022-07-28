@@ -6,19 +6,19 @@ import asia.leadsgen.pasp.data.access.repository.PaymentRepository;
 import asia.leadsgen.pasp.entity.Payment;
 import asia.leadsgen.pasp.error.SystemError;
 import asia.leadsgen.pasp.model.base.ResponseData;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Payer;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PayerInfo;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentExecuteUrlRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentExecuteUrlResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Reason;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.RelatedResources;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Sale;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.ShippingAddress;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Transaction;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Capture;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PurchaseUnit;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PurchaseUnitPayment;
+import asia.leadsgen.pasp.model.dto.external.paypal.Payer;
+import asia.leadsgen.pasp.model.dto.external.paypal.PayerInfo;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreatePaymentExecuteUrlRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreatePaymentExecuteUrlResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.Reason;
+import asia.leadsgen.pasp.model.dto.external.paypal.RelatedResources;
+import asia.leadsgen.pasp.model.dto.external.paypal.Sale;
+import asia.leadsgen.pasp.model.dto.external.paypal.ShippingAddress;
+import asia.leadsgen.pasp.model.dto.external.paypal.Transaction;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.Capture;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProCreateOrderResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PurchaseUnit;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PurchaseUnitPayment;
 import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteRequest;
 import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteResponse;
 import asia.leadsgen.pasp.util.AppConstants;
@@ -166,7 +166,7 @@ public class PaymentExecuteService {
 			PaypalCreatePaymentExecuteUrlRequest executeUrlRequest = paypalApiConnector.createPaymentExecuteUrlRequest(paymentExeRq);
 			PaypalCreatePaymentExecuteUrlResponse executeUrl = paypalApiConnector.createPaymentExecuteUrl(accessToken, executeUrlRequest, paymentExeRq);
 
-			if ((HttpResponseStatus.CREATED.code() != executeUrl.getResponseCode())) {
+			if (HttpResponseStatus.CREATED.code() != executeUrl.getResponseCode()) {
 				errorResponse(paymentExecuteResponse, paymentExeRq, SystemError.PAYMENT_ERROR.getMessage());
 				return ResponseData.ok(paymentExecuteResponse);
 			}

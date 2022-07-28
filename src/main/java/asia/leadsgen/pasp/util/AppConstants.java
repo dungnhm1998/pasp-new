@@ -43,5 +43,7 @@ public class AppConstants {
 	public static final String PAYPAL_REQUEST_ID = "PayPal-Request-Id";
 	public static final String X_GGE4_CONTENT_SHA1 = "x-gge4-content-sha1";
 	public static final String GGE4_API_ = "GGE4_API ";
+	public static final String PREFER = "Prefer";
+	public static final String RETURN_REPRESENTATION = "return=representation";
 
 }

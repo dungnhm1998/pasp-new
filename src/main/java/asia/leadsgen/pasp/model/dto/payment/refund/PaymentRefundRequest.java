@@ -1,7 +1,7 @@
 package asia.leadsgen.pasp.model.dto.payment.refund;
 
 import asia.leadsgen.pasp.model.dto.common.JsonInterface;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalRefundSaleRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalRefundSaleRequest;
 import asia.leadsgen.pasp.util.AppParams;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

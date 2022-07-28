@@ -1,8 +1,8 @@
 package asia.leadsgen.pasp.model.dto.payment;
 
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Link;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Payer;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Reason;
+import asia.leadsgen.pasp.model.dto.external.paypal.Link;
+import asia.leadsgen.pasp.model.dto.external.paypal.Payer;
+import asia.leadsgen.pasp.model.dto.external.paypal.Reason;
 import asia.leadsgen.pasp.util.AppParams;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

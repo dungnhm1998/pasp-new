@@ -1,6 +1,6 @@
 package asia.leadsgen.pasp.data.access.external;
 
-import asia.leadsgen.pasp.model.dto.payment.external.braintree.BraintreeChargeResponse;
+import asia.leadsgen.pasp.model.dto.external.braintree.BraintreeChargeResponse;
 import asia.leadsgen.pasp.util.AppParams;
 import com.braintreegateway.BraintreeGateway;
 import com.braintreegateway.Environment;

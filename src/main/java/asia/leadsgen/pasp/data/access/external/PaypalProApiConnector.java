@@ -1,27 +1,25 @@
 package asia.leadsgen.pasp.data.access.external;
 
 import asia.leadsgen.pasp.model.dto.payment.PaymentRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Payer;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalAccessTokenResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalRefundSaleRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.ShippingAddress;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Amount;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.AmountBreakdown;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Item;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Money;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.NameDetail;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalAppContext;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProAuth2TokenResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProRefundRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProRefundResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PurchaseUnit;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Shipping;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.ShippingDetail;
+import asia.leadsgen.pasp.model.dto.external.paypal.Payer;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalAccessTokenResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.ShippingAddress;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.AmountPro;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.AmountBreakdown;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.ItemPro;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.Money;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.NameDetail;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalAppContext;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProAuth2TokenResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProCreateOrderRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProCreateOrderResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProRefundRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProRefundResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PurchaseUnit;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.Shipping;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.ShippingDetail;
 import asia.leadsgen.pasp.model.dto.payment.refund.PaymentRefundRequest;
 import asia.leadsgen.pasp.util.AppConstants;
-import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.GetterUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -132,7 +130,7 @@ public class PaypalProApiConnector {
 		}
 
 		//set items
-		List<Item> purcharseUnitItemList = new ArrayList<>();
+		List<ItemPro> purcharseUnitItemList = new ArrayList<>();
 
 		int skuCount = 0;
 		double shippingAmount = 0d;
@@ -161,7 +159,7 @@ public class PaypalProApiConnector {
 			tax.setCurrency(currencyCode);
 			tax.setValue(item.getTaxAmount());
 
-			Item purchaseUnitItem = new Item();
+			ItemPro purchaseUnitItem = new ItemPro();
 			purchaseUnitItem.setName(item.getVariantName() + "-" + item.getSizeName());
 			purchaseUnitItem.setSku("SKU" + "-" + skuCount++);
 			purchaseUnitItem.setUnitAmount(unitAmount);
@@ -200,10 +198,10 @@ public class PaypalProApiConnector {
 		breakdownTax.setValue(String.format("%.2f", breakdownTaxTotal));
 		breakdown.setTax(breakdownTax);
 
-		Amount unitAmount = new Amount();
-		unitAmount.setCurrency(currencyCode);
-		unitAmount.setValue(String.format("%.2f", breakdownItemsTotal + breakdownTaxTotal + shippingAmount - discountAmount));
-		unitAmount.setBreakDown(breakdown);
+		AmountPro unitAmountPro = new AmountPro();
+		unitAmountPro.setCurrency(currencyCode);
+		unitAmountPro.setValue(String.format("%.2f", breakdownItemsTotal + breakdownTaxTotal + shippingAmount - discountAmount));
+		unitAmountPro.setBreakDown(breakdown);
 
 		//set shipping
 		ShippingDetail shippingDetail = new ShippingDetail();
@@ -217,7 +215,7 @@ public class PaypalProApiConnector {
 		//set list purchase unit
 		PurchaseUnit unit = new PurchaseUnit();
 		unit.setInvoiceId(paymentRequest.getOrderId());
-		unit.setAmount(unitAmount);
+		unit.setAmountPro(unitAmountPro);
 		unit.setItems(purcharseUnitItemList);
 		unit.setShippingDetail(shippingDetail);
 
@@ -331,10 +329,10 @@ public class PaypalProApiConnector {
 
 	public PaypalProRefundRequest createRefundRequest(PaymentRefundRequest requestbody) {
 		PaypalProRefundRequest request = new PaypalProRefundRequest();
-		Amount amount = new Amount();
-		amount.setValue(requestbody.getRefundInfo().getAmount().getTotal());
-		amount.setCurrency(requestbody.getRefundInfo().getAmount().getCurrency());
-		request.setAmount(amount);
+		AmountPro amountPro = new AmountPro();
+		amountPro.setValue(requestbody.getRefundInfo().getAmount().getTotal());
+		amountPro.setCurrency(requestbody.getRefundInfo().getAmount().getCurrency());
+		request.setAmountPro(amountPro);
 		return request;
 	}
 

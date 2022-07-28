@@ -1,8 +1,8 @@
 package asia.leadsgen.pasp.model.dto.payment;
 
 import asia.leadsgen.pasp.model.dto.common.JsonInterface;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.ShippingAddress;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Shipping;
+import asia.leadsgen.pasp.model.dto.external.paypal.ShippingAddress;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.Shipping;
 import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.JsonNullToEmptySerializer;
 import com.fasterxml.jackson.annotation.JsonProperty;

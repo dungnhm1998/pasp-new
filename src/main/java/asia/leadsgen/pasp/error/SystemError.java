@@ -28,6 +28,7 @@ public class SystemError {
 	public static final SystemError PAYMENT_ERROR = new SystemError(400002, "Payment error", "");
 	public static final SystemError INVALID_ENCRYPTION = new SystemError(400002, "Invalid encryption", "");
 	public static final SystemError INLVAID_PAYMENT_TRANSACTION = new SystemError(400002, "Inlvaid payment transaction", "");
+	public static final SystemError PAYMENT_CREATE_INVOICE_FAILED = new SystemError(400002, "Payment create invoice failed", "");
 
 	public SystemError(int code, String message, String details) {
 		this.code = code;

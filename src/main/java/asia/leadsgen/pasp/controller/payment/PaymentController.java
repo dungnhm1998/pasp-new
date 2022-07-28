@@ -40,7 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Log4j2
 @RestController
 @Api(value = "Handler Payment")
-@RequestMapping(path = "/payment")
 public class PaymentController {
 
 	@Autowired
@@ -52,7 +51,7 @@ public class PaymentController {
 	@Autowired
 	PaymentRefundService paymentRefundService;
 
-	@RequestMapping(method = RequestMethod.POST, path = "")
+	@RequestMapping(method = RequestMethod.POST, path = "/payment")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Request success", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
 					@ExampleObject(name = "charge succees", summary = "charge success", value = PaymentExample.SUCCESS)})),
@@ -77,7 +76,7 @@ public class PaymentController {
 		return responseBody;
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/{id}")
+	@RequestMapping(method = RequestMethod.POST, path = "/payment/{id}")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Request success", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
 					@ExampleObject(name = "charge succees", summary = "charge success", value = PaymentExample.SUCCESS)})),
@@ -102,7 +101,7 @@ public class PaymentController {
 		return responseBody;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/braintree/token")
+	@RequestMapping(method = RequestMethod.GET, path = "/payment/braintree/token")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Request success", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
 					@ExampleObject(name = "charge succees", summary = "charge success", value = PaymentExample.SUCCESS)})),
@@ -127,7 +126,7 @@ public class PaymentController {
 		return responseBody;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/paypal-pro/token")
+	@RequestMapping(method = RequestMethod.GET, path = "/payment/paypal-pro/token")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Request success", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
 					@ExampleObject(name = "charge succees", summary = "charge success", value = PaymentExample.SUCCESS)})),
@@ -148,7 +147,7 @@ public class PaymentController {
 		return responseBody;
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/refund")
+	@RequestMapping(method = RequestMethod.POST, path = "/payment/refund")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Request success", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Object.class), examples = {
 					@ExampleObject(name = "charge succees", summary = "charge success", value = PaymentExample.SUCCESS)})),

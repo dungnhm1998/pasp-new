@@ -1,22 +1,27 @@
 package asia.leadsgen.pasp.data.access.external;
 
 import asia.leadsgen.pasp.model.dto.payment.PaymentRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Amount;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Details;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Item;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.ItemList;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Payer;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalAccessTokenResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentExecuteUrlRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentExecuteUrlResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalRefundSaleRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalRefundSaleResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.RedirectUrls;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.ShippingAddress;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Transaction;
+import asia.leadsgen.pasp.model.dto.external.paypal.Amount;
+import asia.leadsgen.pasp.model.dto.external.paypal.Details;
+import asia.leadsgen.pasp.model.dto.external.paypal.Item;
+import asia.leadsgen.pasp.model.dto.external.paypal.ItemList;
+import asia.leadsgen.pasp.model.dto.external.paypal.Payer;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalAccessTokenResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreateInvoiceRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreateInvoiceResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreatePaymentExecuteUrlRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreatePaymentExecuteUrlResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreatePaymentUrlRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreatePaymentUrlResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalRefundSaleRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalRefundSaleResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalSendInvoiceRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalSendInvoiceResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.RedirectUrls;
+import asia.leadsgen.pasp.model.dto.external.paypal.ShippingAddress;
+import asia.leadsgen.pasp.model.dto.external.paypal.Transaction;
 import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteRequest;
+import asia.leadsgen.pasp.model.dto.payppal.InvoicePaypalRequest;
 import asia.leadsgen.pasp.util.AppConstants;
 import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.GetterUtil;
@@ -304,6 +309,76 @@ public class PaypalApiConnector {
 		if (response.body() != null) {
 			ObjectMapper mapper = new ObjectMapper();
 			responseBody = mapper.readValue(response.body().string(), PaypalRefundSaleResponse.class);
+			return responseBody;
+		}
+
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+
+		return responseBody;
+	}
+
+	public PaypalCreateInvoiceRequest createInvoiceRequest(InvoicePaypalRequest invoicePaypalRequest) {
+		return invoicePaypalRequest.getInvoiceInfo();
+	}
+
+	public PaypalCreateInvoiceResponse createInvoice(String accessToken, PaypalCreateInvoiceRequest paypalCreateInvoiceRequest) throws IOException {
+		PaypalCreateInvoiceResponse responseBody = new PaypalCreateInvoiceResponse();
+		RequestBody formBody = RequestBody.create(AppConstants.MEDIA_TYPE_JSON, paypalCreateInvoiceRequest.toJson()); // new
+		String createInvoiceUrl = "/v2/invoicing/invoices";
+
+		Request request = new Request.Builder()
+				.url(createInvoiceUrl)
+				.post(formBody)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BEARER_ + accessToken)
+				.addHeader(AppConstants.PREFER, AppConstants.RETURN_REPRESENTATION)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		log.info("[PAYPAL CREATE INVOICE RESPONSE] code = " + response.code() + ", message = " + response.message());
+		log.info("[PAYPAL CREATE INVOICE RESPONSE] body : " + response.body());
+
+		if (response.body() != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			responseBody = mapper.readValue(response.body().string(), PaypalCreateInvoiceResponse.class);
+			return responseBody;
+		}
+
+		responseBody.setResponseCode(response.code());
+		responseBody.setMessage(response.message());
+
+		return responseBody;
+	}
+
+	public PaypalSendInvoiceRequest createSendInvoiceRequest(InvoicePaypalRequest invoicePaypalRequest) {
+		return new PaypalSendInvoiceRequest();
+	}
+
+	public PaypalSendInvoiceResponse sendInvoice(String accessToken, String invoiceId, PaypalSendInvoiceRequest paypalSendInvoiceRequest) throws IOException {
+		PaypalSendInvoiceResponse responseBody = new PaypalSendInvoiceResponse();
+		RequestBody formBody = RequestBody.create(AppConstants.MEDIA_TYPE_JSON, paypalSendInvoiceRequest.toJson()); // new
+		String createInvoiceUrl = "/v2/invoicing/invoices" + invoiceId + "/send";
+
+		Request request = new Request.Builder()
+				.url(createInvoiceUrl)
+				.post(formBody)
+				.addHeader(AppConstants.CONTENT_TYPE, AppConstants.CONTENT_TYPE_APPLICATION_JSON)
+				.addHeader(AppConstants.AUTHORIZATION, AppConstants.BEARER_ + accessToken)
+				.addHeader(AppConstants.PREFER, AppConstants.RETURN_REPRESENTATION)
+				.build();
+
+		OkHttpClient client = new OkHttpClient();
+		okhttp3.Response response = client.newCall(request).execute();
+
+		log.info("[PAYPAL SEND INVOICE RESPONSE] code = " + response.code() + ", message = " + response.message());
+		log.info("[PAYPAL SEND INVOICE RESPONSE] body : " + response.body());
+
+		if (response.body() != null) {
+			ObjectMapper mapper = new ObjectMapper();
+			responseBody = mapper.readValue(response.body().string(), PaypalSendInvoiceResponse.class);
 			return responseBody;
 		}
 

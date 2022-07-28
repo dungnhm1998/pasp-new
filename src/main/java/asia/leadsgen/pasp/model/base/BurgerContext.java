@@ -13,6 +13,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class BurgerContext {
 	@ApiModelProperty(hidden = true)
+	private String email;
+	@ApiModelProperty(hidden = true)
 	private String userId;
 	@ApiModelProperty(hidden = true)
 	private String aspRefId;

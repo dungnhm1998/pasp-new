@@ -1,10 +1,10 @@
 package asia.leadsgen.pasp.util;
 
 import asia.leadsgen.pasp.entity.PaymentAccount;
-import asia.leadsgen.pasp.model.dto.payment.external.BankOfUSA.BankUSAChargeRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.BankOfUSA.BankUSAChargeResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.BankOfUSA.BankUSARefundRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.BankOfUSA.BankUSARefundResponse;
+import asia.leadsgen.pasp.model.dto.external.BankOfUSA.BankUSAChargeRequest;
+import asia.leadsgen.pasp.model.dto.external.BankOfUSA.BankUSAChargeResponse;
+import asia.leadsgen.pasp.model.dto.external.BankOfUSA.BankUSARefundRequest;
+import asia.leadsgen.pasp.model.dto.external.BankOfUSA.BankUSARefundResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;

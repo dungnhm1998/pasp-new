@@ -11,19 +11,19 @@ import asia.leadsgen.pasp.error.SystemError;
 import asia.leadsgen.pasp.model.base.ResponseData;
 import asia.leadsgen.pasp.model.dto.payment.PaymentRequest;
 import asia.leadsgen.pasp.model.dto.payment.PaymentResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.BankOfUSA.BankUSAChargeRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.BankOfUSA.BankUSAChargeResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.braintree.BraintreeChargeResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Link;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Payer;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalAccessTokenResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalCreatePaymentUrlResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Reason;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.ShippingAddress;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProCreateOrderResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.Shipping;
+import asia.leadsgen.pasp.model.dto.external.BankOfUSA.BankUSAChargeRequest;
+import asia.leadsgen.pasp.model.dto.external.BankOfUSA.BankUSAChargeResponse;
+import asia.leadsgen.pasp.model.dto.external.braintree.BraintreeChargeResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.Link;
+import asia.leadsgen.pasp.model.dto.external.paypal.Payer;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalAccessTokenResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreatePaymentUrlRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreatePaymentUrlResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.Reason;
+import asia.leadsgen.pasp.model.dto.external.paypal.ShippingAddress;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProCreateOrderRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProCreateOrderResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.Shipping;
 import asia.leadsgen.pasp.util.AesUtil;
 import asia.leadsgen.pasp.util.AppConstants;
 import asia.leadsgen.pasp.util.AppParams;
@@ -109,13 +109,13 @@ public class PaymentService {
 			PaypalAccessTokenResponse accessTokenResponse = paypalApiConnector.createAccessToken();
 
 			String accessToken = accessTokenResponse.getAccessToken();
-			if ((accessToken == null) || accessToken.equalsIgnoreCase("")) {
+			if (StringUtils.isEmpty(accessToken)) {
 				return errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
 			}
 
 			PaypalCreatePaymentUrlRequest paymentUrlRequest = paypalApiConnector.createPaymentUrlRequest(paymentRequest);
 			PaypalCreatePaymentUrlResponse paymentUrlResponse = paypalApiConnector.createPaymentUrl(accessToken, paymentUrlRequest);
-			if ((HttpResponseStatus.CREATED.code() != paymentUrlResponse.getResponseCode())) {
+			if (HttpResponseStatus.CREATED.code() != paymentUrlResponse.getResponseCode()) {
 				return errorResponse(paymentResponse, paymentRequest, SystemError.PAYMENT_ERROR.getMessage());
 			}
 

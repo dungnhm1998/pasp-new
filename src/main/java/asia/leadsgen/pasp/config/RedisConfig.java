@@ -33,7 +33,7 @@ public class RedisConfig {
 		JedisConnectionFactory factory = new JedisConnectionFactory();
 		factory.setHostName(host);
 		factory.setPort(port);
-		factory.setDatabase(1);
+		factory.setDatabase(5);
 		return factory;
 	}
 

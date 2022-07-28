@@ -10,13 +10,13 @@ import asia.leadsgen.pasp.entity.Payment;
 import asia.leadsgen.pasp.entity.PaymentAccount;
 import asia.leadsgen.pasp.error.SystemError;
 import asia.leadsgen.pasp.model.base.ResponseData;
-import asia.leadsgen.pasp.model.dto.payment.external.BankOfUSA.BankUSARefundRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.BankOfUSA.BankUSARefundResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.Link;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalAccessTokenResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal.PaypalRefundSaleResponse;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProRefundRequest;
-import asia.leadsgen.pasp.model.dto.payment.external.paypal_pro.PaypalProRefundResponse;
+import asia.leadsgen.pasp.model.dto.external.BankOfUSA.BankUSARefundRequest;
+import asia.leadsgen.pasp.model.dto.external.BankOfUSA.BankUSARefundResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.Link;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalAccessTokenResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal.PaypalRefundSaleResponse;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProRefundRequest;
+import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProRefundResponse;
 import asia.leadsgen.pasp.model.dto.payment.refund.PaymentRefundRequest;
 import asia.leadsgen.pasp.model.dto.payment.refund.PaymentRefundResponse;
 import asia.leadsgen.pasp.util.AppConstants;
@@ -194,8 +194,8 @@ public class PaymentRefundService {
 					String refundLink = link.getHref();
 					PaypalProRefundResponse refundDetail = paypalProApiConnector.getRefundDetail(xClientId, xClientSecret, refundLink);
 					if (refundDetail.getResponseCode() == 200) {
-						String total = refundDetail.getAmount().getValue();
-						String currency = refundDetail.getAmount().getCurrency();
+						String total = refundDetail.getAmountPro().getValue();
+						String currency = refundDetail.getAmountPro().getCurrency();
 						Payment insertPayment = Payment.builder()
 								.id(paypalProRefundResponse.getId())
 								.accessToken(accessToken)
