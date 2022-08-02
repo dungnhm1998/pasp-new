@@ -1,6 +1,6 @@
 package asia.leadsgen.pasp.model.exception;
 
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import asia.leadsgen.pasp.util.AppParams;
 import asia.leadsgen.pasp.util.ParamUtil;
 
@@ -13,6 +13,6 @@ public class HttpServiceException extends SystemException {
 
 	public HttpServiceException(int code, String reason, Map informationMap) {
 
-		super(new SystemError(code, reason, ParamUtil.getString(informationMap, AppParams.DETAILS)));
+		super(new SystemCode(code, reason, ParamUtil.getString(informationMap, AppParams.DETAILS)));
 	}
 }

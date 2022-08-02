@@ -1,6 +1,6 @@
 package asia.leadsgen.pasp.util;
 
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import asia.leadsgen.pasp.model.base.BurgerContext;
 import asia.leadsgen.pasp.model.exception.AuthorizationException;
 import asia.leadsgen.pasp.model.exception.BadRequestException;
@@ -55,7 +55,7 @@ public class AppUtil {
 
 	public static void checkAuthorize(BurgerContext burgerContext) throws SystemException {
 		if (Objects.isNull(burgerContext) || Objects.isNull(burgerContext.getUserId())) {
-			throw new AuthorizationException(SystemError.UNAUTHORIZED);
+			throw new AuthorizationException(SystemCode.UNAUTHORIZED);
 		}
 	}
 
@@ -72,7 +72,7 @@ public class AppUtil {
 			List<String> listStore = burgerContext.getDropshipStoreIds();
 			long count = listStore.stream().filter(e -> storeId.equalsIgnoreCase(e)).count();
 			if (count <= 0) {
-				throw new BadRequestException(SystemError.OPERATION_NOT_PERMITTED);
+				throw new BadRequestException(SystemCode.OPERATION_NOT_PERMITTED);
 			}
 		}
 	}

@@ -350,4 +350,7 @@ public class AppParams {
 	public static final String REFERER = "referer";
 	public static final String AVATAR = "avatar";
 	public static final String USER = "user";
+	public static final String EXP_YEAR = "exp_year";
+	public static final String EXP_MONTH = "exp_month";
+	public static final String BRAND = "brand";
 }

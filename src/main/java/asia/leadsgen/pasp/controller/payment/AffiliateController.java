@@ -4,6 +4,8 @@ import asia.leadsgen.pasp.model.base.BurgerContext;
 import asia.leadsgen.pasp.model.base.ResponseData;
 import asia.leadsgen.pasp.model.dto.affiliate.AddCardRequest;
 import asia.leadsgen.pasp.model.dto.affiliate.AddCardResponse;
+import asia.leadsgen.pasp.model.dto.affiliate.CreateCustomerRequest;
+import asia.leadsgen.pasp.model.dto.affiliate.CreateCustomerResponse;
 import asia.leadsgen.pasp.model.dto.stripe.BalanceStripeResponse;
 import asia.leadsgen.pasp.model.dto.stripe.ChargeStripeExample;
 import asia.leadsgen.pasp.model.dto.stripe.ChargeStripeRequest;
@@ -38,6 +40,19 @@ public class AffiliateController {
 
 	@Autowired
 	AffiliateService affiliateService;
+
+	@RequestMapping(method = RequestMethod.POST, path = "/cards")
+	public ResponseData<CreateCustomerResponse> createCustomer(
+			@RequestHeader(name = AppConstants.AUTHORIZE_HEADER, required = true) @ApiParam(value = "Access Token") String accessToken,
+			@RequestAttribute(name = AppConstants.BG_CONTEXT, required = true) BurgerContext burgerContext,
+			@RequestBody CreateCustomerRequest addCardRequest) {
+
+		AppUtil.checkAuthorize(burgerContext);
+
+		ResponseData<CreateCustomerResponse> responseBody = affiliateService.createCustomer(burgerContext, addCardRequest);
+
+		return responseBody;
+	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/affiliate/cards")
 	public ResponseData<AddCardResponse> addCard(

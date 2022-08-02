@@ -1,6 +1,6 @@
 package asia.leadsgen.pasp.model.base;
 
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import asia.leadsgen.pasp.util.AppParams;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,20 +8,22 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.ToString;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
 import java.util.List;
 
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResponseData<T> implements Serializable {
 
 	@JsonProperty(value = AppParams.CODE)
-	int code;
+	int code = 200;
 	@JsonProperty(value = AppParams.MESSAGE)
 	String message;
 	@JsonProperty(value = AppParams.DATA)
@@ -44,6 +46,14 @@ public class ResponseData<T> implements Serializable {
 		int pageSize;
 		@JsonProperty(value = AppParams.RESULT)
 		T result;
+
+		@SneakyThrows
+		public T getResult(Class<T> clazz) {
+			if (result!=null){
+				return result;
+			}
+			return clazz.newInstance();
+		}
 	}
 
 	@lombok.Data
@@ -56,44 +66,32 @@ public class ResponseData<T> implements Serializable {
 		String reason;
 	}
 
-	public static <T> ResponseData<T> ok() {
-		return restResult(SystemError.RESPONSE_OK, null);
+	public static <T> ResponseData<T> build(SystemCode systemCode, T responseData) {
+		return restResult(systemCode, responseData, null);
 	}
 
-	public static <T> ResponseData<T> ok(String message) {
-		return restResult(SystemError.RESPONSE_OK, null);
+	public static <T> ResponseData<T> build(SystemCode systemCode, T responseData, List<Error> error) {
+		return restResult(systemCode, responseData, error);
 	}
 
-	public static <T> ResponseData<T> ok(T responseData) {
-		return restResult(SystemError.RESPONSE_OK, responseData);
-	}
-
-	public static <T> ResponseData<T> ok(SystemError systemError, T responseData) {
-		return restResult(systemError, responseData);
-	}
-
-	public static <T> ResponseData<T> failed(SystemError systemError) {
-		return restResult(systemError, null);
-	}
-
-
-	public static <T> ResponseData<T> failed(SystemError systemError, T responseData) {
-		return restResult(systemError, responseData);
-	}
-
-	public static <T> ResponseData<T> build(SystemError systemError, T responseData) {
-		return restResult(systemError, responseData);
-	}
-
-	private static <T> ResponseData<T> restResult(SystemError systemError, T responseData) {
+	private static <T> ResponseData<T> restResult(SystemCode systemCode, T responseData, List<Error> errors) {
 		ResponseData<T> apiResult = new ResponseData<>();
-		apiResult.setCode(systemError.getCode());
-		apiResult.setMessage(systemError.getMessage());
+		apiResult.setCode(systemCode.getCode());
 
-		CommonData<T> data = new CommonData<T>();
-		data.setResult(responseData);
+		if (StringUtils.isNotEmpty(systemCode.getMessage())){
+			apiResult.setMessage(systemCode.getMessage());
+		}
 
-		apiResult.setCommonData(data);
+		if (responseData != null) {
+			CommonData<T> data = new CommonData<T>();
+			data.setResult(responseData);
+			apiResult.setCommonData(data);
+		}
+
+		if (CollectionUtils.isNotEmpty(errors)){
+			apiResult.setError(errors);
+		}
+
 		return apiResult;
 	}
 

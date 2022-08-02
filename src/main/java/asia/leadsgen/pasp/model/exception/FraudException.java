@@ -1,7 +1,7 @@
 package asia.leadsgen.pasp.model.exception;
 
 
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -9,12 +9,12 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public class FraudException extends SystemException {
 
-	public FraudException(SystemError error) {
+	public FraudException(SystemCode error) {
 		super(error);
 	}
 
 	public FraudException(String fraudInformations) {
 
-		super(new SystemError(HttpResponseStatus.FORBIDDEN.code(), HttpResponseStatus.FORBIDDEN.reasonPhrase(), fraudInformations));
+		super(new SystemCode(HttpResponseStatus.FORBIDDEN.code(), HttpResponseStatus.FORBIDDEN.reasonPhrase(), fraudInformations));
 	}
 }

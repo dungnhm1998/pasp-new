@@ -45,5 +45,7 @@ public class AppConstants {
 	public static final String GGE4_API_ = "GGE4_API ";
 	public static final String PREFER = "Prefer";
 	public static final String RETURN_REPRESENTATION = "return=representation";
+	public static final long DEFAULT_SAVE_CARD_CHARGE = 50;
+	public static final String DEFAULT_CURRENCY = "USD";
 
 }

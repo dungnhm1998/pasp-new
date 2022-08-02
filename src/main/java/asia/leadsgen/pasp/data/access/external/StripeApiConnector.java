@@ -5,6 +5,7 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Balance;
 import com.stripe.model.Charge;
+import com.stripe.model.Customer;
 import com.stripe.model.Refund;
 import com.stripe.net.RequestOptions;
 import lombok.Data;
@@ -91,8 +92,8 @@ public class StripeApiConnector {
 	}
 
 	public Refund createRefund(PaymentAccount account, String chargeId, long amount) throws StripeException {
-		log.info("api key = " + account.getStripeApiKey());
-		if (StringUtils.isNotEmpty(account.getStripeApiKey())) {
+		if (account != null && StringUtils.isNotEmpty(account.getStripeApiKey())) {
+			log.info("api key = " + account.getStripeApiKey());
 			Stripe.apiKey = account.getStripeApiKey();
 		} else {
 			Stripe.apiKey = apiKey;
@@ -108,4 +109,27 @@ public class StripeApiConnector {
 
 		return refund;
 	}
+
+	public Customer saveCustomer(String token, String email) throws StripeException {
+		Stripe.apiKey = apiKey;
+		Map<String, Object> chargeParams = new HashMap<>();
+		chargeParams.put("source", token);
+		chargeParams.put("email", email);
+		Customer customer = Customer.create(chargeParams);
+		return customer;
+	}
+
+	public Charge chargeSaveCardInfo(long amount, String currency, String customerId, String email, String token)
+			throws StripeException {
+		Stripe.apiKey = apiKey;
+		Map<String, Object> customerParams = new HashMap<>();
+		customerParams.put("amount", amount);
+		customerParams.put("currency", currency);
+		customerParams.put("customer", customerId);
+		customerParams.put("description", "BGP Saving Card with source=" + token);
+		customerParams.put("receipt_email", email);
+		Charge charge = Charge.create(customerParams);
+		return charge;
+	}
+
 }

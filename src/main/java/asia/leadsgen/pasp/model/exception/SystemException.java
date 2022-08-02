@@ -1,20 +1,20 @@
 package asia.leadsgen.pasp.model.exception;
 
 
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import lombok.Data;
 
 @Data
 public class SystemException extends RuntimeException {
 
-	private SystemError systemError;
+	private SystemCode systemCode;
 
-	public SystemError getSystemError() {
-		return systemError;
+	public SystemCode getSystemCode() {
+		return systemCode;
 	}
 
-	public SystemException(SystemError error) {
+	public SystemException(SystemCode error) {
 		super(error.getMessage());
-		this.systemError = error;
+		this.systemCode = error;
 	}
 }

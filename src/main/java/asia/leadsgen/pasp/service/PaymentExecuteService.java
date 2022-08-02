@@ -4,7 +4,7 @@ import asia.leadsgen.pasp.data.access.external.PaypalApiConnector;
 import asia.leadsgen.pasp.data.access.external.PaypalProApiConnector;
 import asia.leadsgen.pasp.data.access.repository.PaymentRepository;
 import asia.leadsgen.pasp.entity.Payment;
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import asia.leadsgen.pasp.model.base.ResponseData;
 import asia.leadsgen.pasp.model.dto.external.paypal.Payer;
 import asia.leadsgen.pasp.model.dto.external.paypal.PayerInfo;
@@ -19,6 +19,7 @@ import asia.leadsgen.pasp.model.dto.external.paypal_pro.Capture;
 import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProCreateOrderResponse;
 import asia.leadsgen.pasp.model.dto.external.paypal_pro.PurchaseUnit;
 import asia.leadsgen.pasp.model.dto.external.paypal_pro.PurchaseUnitPayment;
+import asia.leadsgen.pasp.model.dto.payment.refund.PaymentRefundResponse;
 import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteRequest;
 import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteResponse;
 import asia.leadsgen.pasp.util.AppConstants;
@@ -55,15 +56,17 @@ public class PaymentExecuteService {
 	SimpleDateFormat dateFormat = new SimpleDateFormat(AppConstants.DEFAULT_DATE_TIME_FORMAT_PATTERN);
 
 	public ResponseData<PaymentExecuteResponse> paymentExecute(PaymentExecuteRequest paymentExeRq) {
+
+		ResponseData<PaymentExecuteResponse> responseData = new ResponseData<>();
 		PaymentExecuteResponse paymentExecuteResponse = new PaymentExecuteResponse();
+
 		String id = paymentExeRq.getId();
 		String method = paymentExeRq.getMethod();
 		String payerId = paymentExeRq.getPayerId();
 		String payId = paymentExeRq.getPayId();
 		String tokenId = paymentExeRq.getTokenId();
 		if (!AppParams.PAYPAL_PRO.equals(method) && (StringUtils.isEmpty(payerId) || StringUtils.isEmpty(tokenId) || StringUtils.isEmpty(payId))) {
-			errorResponse(paymentExecuteResponse, paymentExeRq, SystemError.PAYMENT_ERROR.getMessage());
-			return ResponseData.ok(paymentExecuteResponse);
+			errorResponse(responseData, paymentExeRq, SystemCode.PAYMENT_ERROR);
 		} else {
 			Payment paymentDB = paymentRepository.getById(id);
 			String state = paymentDB.getState();
@@ -71,9 +74,9 @@ public class PaymentExecuteService {
 				String accessToken = paymentDB.getAccessToken();
 				switch (method) {
 					case AppParams.PAYPAL_PRO:
-						return paypalProExecutePayment(paymentExecuteResponse, paymentExeRq, accessToken);
+						paypalProExecutePayment(responseData, paymentExeRq, accessToken);
 					default:
-						return paypalExecutePayment(paymentExecuteResponse, paymentExeRq, accessToken);
+						paypalExecutePayment(responseData, paymentExeRq, accessToken);
 				}
 			} else if (ResourceStates.APPROVED.equals(state)) {
 
@@ -90,18 +93,19 @@ public class PaymentExecuteService {
 				paymentExecuteResponse.setUpdateTime(dateFormat.format(paymentDB.getUpdateDate()));
 				paymentExecuteResponse.setState(paymentDB.getState());
 				paymentExecuteResponse.setTokenId(tokenId);
+				responseData.getCommonData().setResult(paymentExecuteResponse);
 			}
 
 		}
-		return ResponseData.ok(paymentExecuteResponse);
+		return responseData;
 	}
 
-	private ResponseData<PaymentExecuteResponse> paypalProExecutePayment(PaymentExecuteResponse paymentExecuteResponse, PaymentExecuteRequest paymentExeRq, String accessToken) {
+	private void paypalProExecutePayment(ResponseData<PaymentExecuteResponse> responseData, PaymentExecuteRequest paymentExeRq, String accessToken) {
 		try {
 			PaypalProCreateOrderResponse paypalProOrderCapture = paypalProApiConnector.createOrderCapture(paymentExeRq.getPayId(), accessToken);
 
 			if (HttpResponseStatus.CREATED.code() != paypalProOrderCapture.getResponseCode()) {
-				errorResponse(paymentExecuteResponse, paymentExeRq, paypalProOrderCapture.getMessage());
+				errorResponse(responseData, paymentExeRq, SystemCode.PAYPAL_CREATE_ORDER_FAIL);
 			} else {
 				String id = paymentExeRq.getId();
 				String tokenId = paymentExeRq.getTokenId();
@@ -141,6 +145,7 @@ public class PaymentExecuteService {
 				paymentRepository.save(insertPayment);//insert into db
 
 				// response
+				PaymentExecuteResponse paymentExecuteResponse = responseData.getCommonData().getResult();
 				paymentExecuteResponse.setAccountName(paypalProApiConnector.getPaypalProAccountName());
 				paymentExecuteResponse.setId(insertPayment.getId());
 				paymentExecuteResponse.setPayId(insertPayment.getPayId());
@@ -152,50 +157,53 @@ public class PaymentExecuteService {
 				paymentExecuteResponse.setCreateTime(dateFormat.format(insertPayment.getCreateDate()));
 				paymentExecuteResponse.setUpdateTime(dateFormat.format(insertPayment.getUpdateDate()));
 				paymentExecuteResponse.setState(insertPayment.getState());
+				responseData.getCommonData().setResult(paymentExecuteResponse);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseData.failed(SystemError.PAYMENT_ERROR, null);
+			responseData.setCode(SystemCode.RESPONSE_BAD_REQUEST.getCode());
+			ResponseData.Error error = new ResponseData.Error(SystemCode.PAYMENT_ERROR.getCode(), SystemCode.PAYMENT_ERROR.getMessage());
+			responseData.getError().add(error);
 		}
-		return ResponseData.ok(paymentExecuteResponse);
 	}
 
-	private ResponseData<PaymentExecuteResponse> paypalExecutePayment(PaymentExecuteResponse paymentExecuteResponse, PaymentExecuteRequest paymentExeRq, String accessToken) {
+	private void paypalExecutePayment(ResponseData<PaymentExecuteResponse> responseData, PaymentExecuteRequest paymentExeRq, String accessToken) {
 		try {
 			PaypalCreatePaymentExecuteUrlRequest executeUrlRequest = paypalApiConnector.createPaymentExecuteUrlRequest(paymentExeRq);
 			PaypalCreatePaymentExecuteUrlResponse executeUrl = paypalApiConnector.createPaymentExecuteUrl(accessToken, executeUrlRequest, paymentExeRq);
 
 			if (HttpResponseStatus.CREATED.code() != executeUrl.getResponseCode()) {
-				errorResponse(paymentExecuteResponse, paymentExeRq, SystemError.PAYMENT_ERROR.getMessage());
-				return ResponseData.ok(paymentExecuteResponse);
+				errorResponse(responseData, paymentExeRq, SystemCode.PAYMENT_ERROR);
 			}
 
 			String saleId = "";
 			String invoiceNumber = "";
 			List<Transaction> transactions = executeUrl.getTransactions();
-			if (!CollectionUtils.isEmpty(transactions)){
+			if (!CollectionUtils.isEmpty(transactions)) {
 				List<RelatedResources> relatedResources = transactions.get(0).getRelatedResources();
-				if (!CollectionUtils.isEmpty(relatedResources)){
+				if (!CollectionUtils.isEmpty(relatedResources)) {
 					Sale sale = relatedResources.get(0).getSale();
-					if (!ObjectUtils.isEmpty(sale)){
+					if (!ObjectUtils.isEmpty(sale)) {
 						saleId = sale.getId();
 					}
 				}
 				invoiceNumber = transactions.get(0).getInvoiceNumber();
 			}
 
+			PaymentExecuteResponse paymentExecuteResponse = responseData.getCommonData().getResult();
+
 			String state = "";
 			String tokenId = "";
 			Payer payer = new Payer();
-			if (ResourceStates.APPROVED.equals(executeUrl.getState())){
+			if (ResourceStates.APPROVED.equals(executeUrl.getState())) {
 				state = ResourceStates.APPROVED;
 				tokenId = paymentExeRq.getTokenId();
 
 				payer.setPayerId(paymentExeRq.getPayerId());
 				PaymentExecuteRequest.PaymentInfo paymentRequestInfo = paymentExeRq.getPayment();
 				String token = paymentRequestInfo.getToken();
-				if (AppParams.PAYPAL_EXPRESS.equals(token)){
+				if (AppParams.PAYPAL_EXPRESS.equals(token)) {
 					Payer payerResponse = executeUrl.getPayer();
 					PayerInfo payerInfo = payerResponse.getPayerInfo();
 					ShippingAddress payerShippingAddress = payerInfo.getShippingAddress();
@@ -212,7 +220,7 @@ public class PaymentExecuteService {
 					paymentExecuteResponse.setShipping(shippingAddress);
 					paymentExecuteResponse.setType(AppParams.PAYPAL_EXPRESS);
 				}
-			}else{
+			} else {
 				state = ResourceStates.FAIL;
 				tokenId = "";
 			}
@@ -243,16 +251,17 @@ public class PaymentExecuteService {
 			paymentExecuteResponse.setState(insertPayment.getState());
 			paymentExecuteResponse.setSaleId(saleId);
 			paymentExecuteResponse.setInvoiceNumber(invoiceNumber);
+			responseData.getCommonData().setResult(paymentExecuteResponse);
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			return ResponseData.failed(SystemError.PAYMENT_ERROR, null);
+			responseData.setCode(SystemCode.RESPONSE_BAD_REQUEST.getCode());
+			ResponseData.Error error = new ResponseData.Error(SystemCode.PAYMENT_ERROR.getCode(), SystemCode.PAYMENT_ERROR.getMessage());
+			responseData.getError().add(error);
 		}
-
-		return ResponseData.ok(paymentExecuteResponse);
 	}
 
-	private PaymentExecuteResponse errorResponse(PaymentExecuteResponse paymentExecuteResponse, PaymentExecuteRequest paymentExeRq, String message) {
+	private void errorResponse(ResponseData<PaymentExecuteResponse> responseData, PaymentExecuteRequest paymentExeRq, SystemCode systemCode) {
 
 		Payment insertPayment = Payment.builder()
 				.id(AppUtil.genRandomId())
@@ -267,9 +276,10 @@ public class PaymentExecuteService {
 		paymentRepository.save(insertPayment);//insert into db
 
 		Reason reason = new Reason();
-		reason.setMessage(message);
+		reason.setMessage(systemCode.getMessage());
 
 		// response
+		PaymentExecuteResponse paymentExecuteResponse = responseData.getCommonData().getResult();
 		paymentExecuteResponse.setId(insertPayment.getId());
 		paymentExecuteResponse.setPayId(insertPayment.getPayId());
 		paymentExecuteResponse.setReference(insertPayment.getReference());
@@ -283,7 +293,10 @@ public class PaymentExecuteService {
 		paymentExecuteResponse.setReason(reason);
 		paymentExecuteResponse.setLinks(new ArrayList<>());
 		paymentExecuteResponse.setTokenId("");
+		responseData.getCommonData().setResult(paymentExecuteResponse);
 
-		return paymentExecuteResponse;
+		responseData.setCode(SystemCode.RESPONSE_BAD_REQUEST.getCode());
+		ResponseData.Error error = new ResponseData.Error(systemCode.getCode(), systemCode.getMessage());
+		responseData.getError().add(error);
 	}
 }

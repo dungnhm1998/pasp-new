@@ -2,7 +2,7 @@ package asia.leadsgen.pasp.service;
 
 import asia.leadsgen.pasp.data.access.external.BraintreeApiConnector;
 import asia.leadsgen.pasp.data.access.external.PaypalProApiConnector;
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import asia.leadsgen.pasp.model.base.ResponseData;
 import asia.leadsgen.pasp.model.dto.external.paypal.PaypalAccessTokenResponse;
 import asia.leadsgen.pasp.model.dto.external.paypal_pro.PaypalProAuth2TokenResponse;
@@ -30,21 +30,23 @@ public class TokenService {
 	@Autowired
 	PaypalProApiConnector paypalProApiConnector;
 
-	SimpleDateFormat dateFormat = new SimpleDateFormat(AppConstants.DEFAULT_DATE_TIME_FORMAT_PATTERN);
-
 	public ResponseData<BraintreeTokenResponse> getTokenBraintree(String method) {
+		ResponseData<BraintreeTokenResponse> responseData = new ResponseData<>();
 		BraintreeTokenResponse braintreeTokenResponse = new BraintreeTokenResponse();
 		if (AppParams.BRAINTREE.matches(method)) {
 			BraintreeGateway braintreeGateway = braintreeApiConnector.getToken();
 			if (braintreeGateway!= null){
 				braintreeTokenResponse.setToken(braintreeGateway.clientToken().generate());
+				responseData.getCommonData().setResult(braintreeTokenResponse);
 			}
 		}
 
-		return ResponseData.ok(braintreeTokenResponse);
+		return responseData;
 	}
 
 	public ResponseData<PaypalProTokenResponse> getTokenClientPaypal() {
+		ResponseData<PaypalProTokenResponse> responseData = new ResponseData<>();
+
 		PaypalProTokenResponse paypalProTokenResponse= new PaypalProTokenResponse();
 
 		try {
@@ -67,12 +69,16 @@ public class TokenService {
 				}
 			}
 
+			responseData.getCommonData().setResult(paypalProTokenResponse);
+
 		} catch (IOException e) {
 			e.printStackTrace();
-			ResponseData.failed(SystemError.PAYMENT_ERROR);
+			responseData.setCode(SystemCode.RESPONSE_BAD_REQUEST.getCode());
+			ResponseData.Error error = new ResponseData.Error(SystemCode.PAYMENT_ERROR.getCode(), SystemCode.PAYMENT_ERROR.getMessage());
+			responseData.getError().add(error);
 		}
 
-		return ResponseData.ok(paypalProTokenResponse);
+		return responseData;
 	}
 
 }

@@ -3,13 +3,14 @@ package asia.leadsgen.pasp.service;
 import asia.leadsgen.pasp.data.access.external.PaypalApiConnector;
 import asia.leadsgen.pasp.data.access.repository.PaymentAccountRepository;
 import asia.leadsgen.pasp.data.access.repository.PaymentRepository;
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import asia.leadsgen.pasp.model.base.ResponseData;
 import asia.leadsgen.pasp.model.dto.external.paypal.PaypalAccessTokenResponse;
 import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreateInvoiceRequest;
 import asia.leadsgen.pasp.model.dto.external.paypal.PaypalCreateInvoiceResponse;
 import asia.leadsgen.pasp.model.dto.external.paypal.PaypalSendInvoiceRequest;
 import asia.leadsgen.pasp.model.dto.external.paypal.PaypalSendInvoiceResponse;
+import asia.leadsgen.pasp.model.dto.payment_execute.PaymentExecuteResponse;
 import asia.leadsgen.pasp.model.dto.payppal.InvoicePaypalRequest;
 import asia.leadsgen.pasp.model.dto.payppal.InvoicePaypalResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -35,7 +36,9 @@ public class PaypalService {
 	PaymentAccountRepository paymentAccountRepository;
 
 	public ResponseData<InvoicePaypalResponse> createInvoice(InvoicePaypalRequest invoicePaypalRequest) {
-		InvoicePaypalResponse invoicePaypalResponse = new InvoicePaypalResponse();
+		ResponseData<InvoicePaypalResponse> responseData = new ResponseData<>();
+
+		InvoicePaypalResponse invoicePaypalResponse = responseData.getCommonData().getResult();
 
 		log.info("psp call to pasp and payname:" + paypalApiConnector.getPaypalAccountName());
 
@@ -45,7 +48,7 @@ public class PaypalService {
 
 			String accessToken = accessTokenResponse.getAccessToken();
 			if (StringUtils.isEmpty(accessToken)) {
-				return errorResponse(invoicePaypalResponse, invoicePaypalRequest, SystemError.PAYMENT_ERROR.getMessage());
+				errorResponse(responseData, invoicePaypalRequest, SystemCode.INVALID_ACCESS_TOKEN);
 			}
 			log.info("accessToken = " + accessToken);
 
@@ -68,27 +71,30 @@ public class PaypalService {
 					invoicePaypalResponse.setId(invoiceId);
 					invoicePaypalResponse.setAccountName(paypalApiConnector.getPaypalAccountName());
 					invoicePaypalResponse.setHref(href);
-
 					log.info("pasp invoiceSentHandler:" + invoicePaypalResponse);
+
+					responseData.getCommonData().setResult(invoicePaypalResponse);
+
 				} else {
-					return errorResponse(invoicePaypalResponse, invoicePaypalRequest, SystemError.PAYMENT_CREATE_INVOICE_FAILED.getMessage());
+					errorResponse(responseData, invoicePaypalRequest, SystemCode.PAYMENT_CREATE_INVOICE_FAILED);
 				}
 			} else {
-				return errorResponse(invoicePaypalResponse, invoicePaypalRequest, SystemError.PAYMENT_CREATE_INVOICE_FAILED.getMessage());
+				errorResponse(responseData, invoicePaypalRequest, SystemCode.PAYMENT_CREATE_INVOICE_FAILED);
 			}
 
-
-		} catch (
-				IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
-			return ResponseData.failed(SystemError.PAYMENT_ERROR, null);
+			responseData.setCode(SystemCode.RESPONSE_BAD_REQUEST.getCode());
+			ResponseData.Error error = new ResponseData.Error(SystemCode.PAYMENT_ERROR.getCode(), SystemCode.PAYMENT_ERROR.getMessage());
+			responseData.getError().add(error);
 		}
-		return ResponseData.ok(invoicePaypalResponse);
+		return responseData;
 	}
 
-	private ResponseData<InvoicePaypalResponse> errorResponse(InvoicePaypalResponse paymentResponse, InvoicePaypalRequest paymentRequest, String message) {
+	private void errorResponse(ResponseData<InvoicePaypalResponse> responseData, InvoicePaypalRequest paymentRequest, SystemCode systemCode) {
 
-
-		return ResponseData.ok(paymentResponse);
+		responseData.setCode(SystemCode.RESPONSE_BAD_REQUEST.getCode());
+		ResponseData.Error error = new ResponseData.Error(systemCode.getCode(), systemCode.getMessage());
+		responseData.getError().add(error);
 	}
 }

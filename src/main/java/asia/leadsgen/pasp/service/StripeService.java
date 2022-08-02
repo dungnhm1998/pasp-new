@@ -5,7 +5,7 @@ import asia.leadsgen.pasp.data.access.repository.PaymentAccountRepository;
 import asia.leadsgen.pasp.data.access.repository.PaymentRepository;
 import asia.leadsgen.pasp.entity.Payment;
 import asia.leadsgen.pasp.entity.PaymentAccount;
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import asia.leadsgen.pasp.model.base.ResponseData;
 import asia.leadsgen.pasp.model.dto.external.paypal.Payer;
 import asia.leadsgen.pasp.model.dto.external.paypal.Reason;
@@ -46,6 +46,7 @@ public class StripeService {
 	SimpleDateFormat dateFormat = new SimpleDateFormat(AppConstants.DEFAULT_DATE_TIME_FORMAT_PATTERN);
 
 	public ResponseData<ChargeStripeResponse> chargeStripe(ChargeStripeRequest chargeStripeRequest) {
+		ResponseData<ChargeStripeResponse> responseData = new ResponseData<>();
 		ChargeStripeResponse chargeResponse = new ChargeStripeResponse();
 
 		try {
@@ -94,16 +95,20 @@ public class StripeService {
 			chargeResponse.setPayer(new Payer());
 			chargeResponse.setCreateTime(dateFormat.format(insertPayment.getCreateDate()));
 			chargeResponse.setState(insertPayment.getState());
+			responseData.getCommonData().setResult(chargeResponse);
 
 		} catch (StripeException e) {
 			e.printStackTrace();
-			return ResponseData.failed(SystemError.PAYMENT_ERROR);
+			responseData.setCode(SystemCode.RESPONSE_BAD_REQUEST.getCode());
+			ResponseData.Error error = new ResponseData.Error(SystemCode.PAYMENT_ERROR.getCode(), SystemCode.PAYMENT_ERROR.getMessage());
+			responseData.getError().add(error);
 		}
 
-		return ResponseData.ok(chargeResponse);
+		return responseData;
 	}
 
 	public ResponseData<BalanceStripeResponse> getStripeBalance(String accountName) {
+		ResponseData<BalanceStripeResponse> responseData = new ResponseData<>();
 		BalanceStripeResponse balanceStripeResponse = new BalanceStripeResponse();
 
 		try {
@@ -134,11 +139,16 @@ public class StripeService {
 
 			balanceStripeResponse.setAccountName(accountName);
 			balanceStripeResponse.setBalance(balanceAmount);
+
+			responseData.getCommonData().setResult(balanceStripeResponse);
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseData.failed(SystemError.PAYMENT_ERROR);
+			responseData.setCode(SystemCode.RESPONSE_BAD_REQUEST.getCode());
+			ResponseData.Error error = new ResponseData.Error(SystemCode.PAYMENT_ERROR.getCode(), SystemCode.PAYMENT_ERROR.getMessage());
+			responseData.getError().add(error);
 		}
 
-		return ResponseData.ok(balanceStripeResponse);
+		return responseData;
 	}
 }

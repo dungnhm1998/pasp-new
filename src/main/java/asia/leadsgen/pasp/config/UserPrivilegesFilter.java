@@ -1,6 +1,6 @@
 package asia.leadsgen.pasp.config;
 
-import asia.leadsgen.pasp.error.SystemError;
+import asia.leadsgen.pasp.error.SystemCode;
 import asia.leadsgen.pasp.model.base.BurgerContext;
 import asia.leadsgen.pasp.model.exception.AuthenticationException;
 import asia.leadsgen.pasp.util.AppConstants;
@@ -128,7 +128,7 @@ public class UserPrivilegesFilter implements Filter {
 
 			return encryptMap(payload);
 		} catch (Exception e) {
-			throw new AuthenticationException(SystemError.INVALID_TOKEN);
+			throw new AuthenticationException(SystemCode.INVALID_TOKEN);
 		}
 	}
 
